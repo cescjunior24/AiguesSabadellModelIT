@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estadísticas de Tickets · Remedy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16233f;
+    --navy-2:#1d3157;
+    --blue:#2f5fa8;
+    --blue-soft:#eaf0fa;
+    --ink:#1b2433;
+    --mut:#5b6778;
+    --line:#d7dee9;
+    --bg:#f4f6fa;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    font-family:'IBM Plex Sans', sans-serif;
+    color:var(--ink);
+  }
+  .page{
+    position:relative;
+    width:100%;
+    max-width:1500px;
+    margin:0 auto;
+    padding:30px 40px 60px;
+  }
+
+  .back-link{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:13px; font-weight:600;
+    color:var(--navy-2);
+    text-decoration:none;
+    padding:7px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--card);
+    margin-bottom:18px;
+    transition:border-color .15s, background .15s;
+  }
+  .back-link:hover{ border-color:var(--blue); background:var(--blue-soft); }
+  .back-link svg{ width:15px; height:15px; stroke:currentColor; }
+
+  header{ margin-bottom:22px; }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:26px;
+    font-weight:700;
+    margin:0 0 5px;
+    color:var(--navy);
+    letter-spacing:-0.01em;
+  }
+  h1 .sep{ color:#9aa6bb; font-weight:500; margin:0 10px; }
+  .subtitle{
+    font-size:13px;
+    color:var(--mut);
+    margin:0;
+  }
+
+  .kpi-row{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+    margin-bottom:22px;
+  }
+  .kpi-tile{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px 18px;
+    display:flex; align-items:center; gap:14px;
+  }
+  .kpi-tile .k-icon{
+    width:40px; height:40px; border-radius:10px;
+    background:var(--blue-soft);
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .kpi-tile .k-icon svg{ width:20px; height:20px; stroke:var(--blue); }
+  .kpi-tile .k-value{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700; font-size:21px; color:var(--navy); line-height:1.15;
+    font-variant-numeric: tabular-nums;
+  }
+  .kpi-tile .k-label{ font-size:11px; color:var(--mut); line-height:1.3; margin-top:2px; }
+
+  .chart-panel{
+    background:var(--card);
+    border:1.5px solid var(--line);
+    border-radius:14px;
+    padding:20px 22px 22px;
+    margin-bottom:20px;
+  }
+  .chart-panel h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:15px; font-weight:600; color:var(--navy);
+    margin:0 0 4px;
+  }
+  .chart-sub{ font-size:11.5px; color:var(--mut); margin:0 0 16px; }
+
+  .chart-axis-labels{
+    position:relative;
+    height:16px;
+    margin-top:4px;
+  }
+  .chart-axis-labels span{
+    position:absolute;
+    font-size:10.5px; color:var(--mut);
+    transform:translateX(-50%);
+    white-space:nowrap;
+  }
+  .chart-axis-labels span:first-child{ transform:none; }
+  .chart-axis-labels span:last-child{ transform:translateX(-100%); }
+
+  .viz-tooltip{
+    position:fixed; z-index:80; display:none;
+    background:var(--navy); color:#fff;
+    font-size:11.5px; font-weight:600;
+    padding:7px 11px; border-radius:7px;
+    pointer-events:none;
+    white-space:nowrap;
+    box-shadow:0 4px 14px rgba(15,25,50,.2);
+    line-height:1.4;
+  }
+  .viz-tooltip .tt-sub{ font-weight:400; color:#cfe0ff; font-size:10.5px; }
+
+  .legend-row{
+    display:flex; gap:16px; flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .legend-item{
+    display:flex; align-items:center; gap:6px;
+    font-size:11.5px; color:var(--ink);
+  }
+  .legend-dot{ width:10px; height:10px; border-radius:3px; flex:none; }
+
+  .stacked-chart{
+    display:flex; align-items:flex-end; gap:36px;
+    height:270px;
+    padding:0 10px;
+    border-bottom:1.5px solid var(--line);
+  }
+  .stack-col{
+    display:flex; flex-direction:column; align-items:center;
+    flex:1; height:100%; justify-content:flex-end;
+    min-width:0;
+  }
+  .stack-total{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700; font-size:14px; color:var(--navy);
+    margin-bottom:6px; font-variant-numeric:tabular-nums;
+  }
+  .stack-bar{
+    width:60%; max-width:90px;
+    display:flex; flex-direction:column-reverse;
+    border-radius:6px 6px 0 0;
+    overflow:hidden;
+    cursor:default;
+  }
+  .stack-seg{ width:100%; min-height:2px; }
+  .stack-names{
+    display:flex; gap:36px; padding:10px 10px 0;
+  }
+  .stack-name{
+    flex:1; text-align:center;
+    font-size:11.5px; color:var(--ink); line-height:1.3;
+    min-width:0;
+  }
+
+  .charts-row{
+    display:grid; grid-template-columns:1fr 1fr; gap:20px;
+  }
+
+  .bar-row{
+    display:flex; align-items:center; gap:10px; padding:6px 0;
+  }
+  .bar-label{
+    width:200px; flex:none;
+    font-size:11.5px; color:var(--ink);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .bar-track{
+    flex:1; height:10px;
+    background:var(--blue-soft);
+    border-radius:5px; overflow:hidden;
+  }
+  .bar-fill{ height:100%; background:var(--blue); border-radius:5px; }
+  .bar-value{
+    width:112px; flex:none; text-align:right;
+    font-size:11.5px; font-weight:600; color:var(--navy-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .bar-pct{ font-weight:400; color:var(--mut); }
+
+  .page-footnote{
+    font-size:11px; color:var(--mut); text-align:center; margin-top:8px;
+  }
+
+  @media (max-width:1100px){
+    .kpi-row{ grid-template-columns:repeat(2,1fr); }
+    .charts-row{ grid-template-columns:1fr; }
+  }
+  @media (max-width:640px){
+    .page{ padding:20px 16px 40px; }
+    h1{ font-size:21px; }
+    .kpi-row{ grid-template-columns:1fr; }
+    .bar-label{ width:120px; }
+    .bar-value{ width:88px; font-size:10.5px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="viz-tooltip" class="viz-tooltip"></div>
+
+<div class="page">
+
+  <a class="back-link" href="modelo-prestacion-servicio-it.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Volver al modelo
+  </a>
+
+  <header>
+    <h1>Estadísticas de Tickets<span class="sep">|</span>Remedy</h1>
+    <p class="subtitle">Del 28 nov 2025 al 9 sep 2026 · 2.000 tickets registrados · 204 días laborables (L-V)</p>
+  </header>
+
+  <div class="kpi-row">
+    <div class="kpi-tile">
+      <div class="k-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg></div>
+      <div>
+        <div class="k-value">2.000</div>
+        <div class="k-label">Tickets totales</div>
+      </div>
+    </div>
+    <div class="kpi-tile">
+      <div class="k-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+      <div>
+        <div class="k-value">9,8 / día</div>
+        <div class="k-label">Media en días laborables (L-V)</div>
+      </div>
+    </div>
+    <div class="kpi-tile">
+      <div class="k-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div>
+      <div>
+        <div class="k-value">94,9%</div>
+        <div class="k-label">Cerrados (1.898 tickets)</div>
+      </div>
+    </div>
+    <div class="kpi-tile">
+      <div class="k-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+      <div>
+        <div class="k-value">5,1%</div>
+        <div class="k-label">Abiertos (102 tickets)</div>
+      </div>
+    </div>
+    <div class="kpi-tile">
+      <div class="k-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg></div>
+      <div>
+        <div class="k-value">333</div>
+        <div class="k-label">Abiertos por IT hacia Veolia (Francesc, Maria Angeles, Jeroni, Gerard, Vicenç)</div>
+      </div>
+    </div>
+    <div class="kpi-tile">
+      <div class="k-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3v-7a9 9 0 0 1 18 0v7h-3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg></div>
+      <div>
+        <div class="k-value">469</div>
+        <div class="k-label">Tratados por técnicos de IT (Francesc, Maria Angeles, Jeroni, Gerard, Vicenç)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <h2>Evolución semanal de tickets</h2>
+    <p class="chart-sub">42 semanas · pico de 98 tickets la semana del 20 abr</p>
+    <div class="legend-row">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Total</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#6a3f9e"></span>Aigües de Sabadell</div>
+    </div>
+    <svg viewBox="0 0 1180 220" style="width:100%; height:auto; display:block;">
+      <line x1="10" y1="210" x2="1170" y2="210" stroke="var(--line)" stroke-width="1"/>
+      <path d="M 10.0,202.9 L 38.3,123.0 L 66.6,147.9 L 94.9,91.1 L 123.2,194.0 L 151.5,201.1 L 179.8,105.3 L 208.0,94.6 L 236.3,80.5 L 264.6,140.8 L 292.9,123.0 L 321.2,98.2 L 349.5,142.6 L 377.8,119.5 L 406.1,82.2 L 434.4,108.8 L 462.7,62.7 L 491.0,114.2 L 519.3,165.6 L 547.6,149.7 L 575.9,119.5 L 604.1,36.1 L 632.4,128.4 L 660.7,94.6 L 689.0,140.8 L 717.3,108.8 L 745.6,76.9 L 773.9,130.1 L 802.2,96.4 L 830.5,119.5 L 858.8,140.8 L 887.1,85.8 L 915.4,117.7 L 943.7,123.0 L 972.0,107.1 L 1000.2,156.8 L 1028.5,139.0 L 1056.8,160.3 L 1085.1,183.4 L 1113.4,153.2 L 1141.7,117.7 L 1170.0,186.9 L 1170.0,210 L 10.0,210 Z" fill="var(--blue-soft)" stroke="none"/>
+      <path d="M 10.0,202.9 L 38.3,123.0 L 66.6,147.9 L 94.9,91.1 L 123.2,194.0 L 151.5,201.1 L 179.8,105.3 L 208.0,94.6 L 236.3,80.5 L 264.6,140.8 L 292.9,123.0 L 321.2,98.2 L 349.5,142.6 L 377.8,119.5 L 406.1,82.2 L 434.4,108.8 L 462.7,62.7 L 491.0,114.2 L 519.3,165.6 L 547.6,149.7 L 575.9,119.5 L 604.1,36.1 L 632.4,128.4 L 660.7,94.6 L 689.0,140.8 L 717.3,108.8 L 745.6,76.9 L 773.9,130.1 L 802.2,96.4 L 830.5,119.5 L 858.8,140.8 L 887.1,85.8 L 915.4,117.7 L 943.7,123.0 L 972.0,107.1 L 1000.2,156.8 L 1028.5,139.0 L 1056.8,160.3 L 1085.1,183.4 L 1113.4,153.2 L 1141.7,117.7 L 1170.0,186.9" fill="none" stroke="var(--blue)" stroke-width="2.2"/>
+      <circle class="pt" cx="10.0" cy="202.9" r="4.5" fill="transparent" data-tt="Semana del 24 nov 2025|4 tickets"/>
+      <circle class="pt" cx="38.3" cy="123.0" r="4.5" fill="transparent" data-tt="Semana del 1 dic 2025|49 tickets"/>
+      <circle class="pt" cx="66.6" cy="147.9" r="4.5" fill="transparent" data-tt="Semana del 8 dic 2025|35 tickets"/>
+      <circle class="pt" cx="94.9" cy="91.1" r="4.5" fill="transparent" data-tt="Semana del 15 dic 2025|67 tickets"/>
+      <circle class="pt" cx="123.2" cy="194.0" r="4.5" fill="transparent" data-tt="Semana del 22 dic 2025|9 tickets"/>
+      <circle class="pt" cx="151.5" cy="201.1" r="4.5" fill="transparent" data-tt="Semana del 29 dic 2025|5 tickets"/>
+      <circle class="pt" cx="179.8" cy="105.3" r="4.5" fill="transparent" data-tt="Semana del 5 ene 2026|59 tickets"/>
+      <circle class="pt" cx="208.0" cy="94.6" r="4.5" fill="transparent" data-tt="Semana del 12 ene 2026|65 tickets"/>
+      <circle class="pt" cx="236.3" cy="80.5" r="4.5" fill="transparent" data-tt="Semana del 19 ene 2026|73 tickets"/>
+      <circle class="pt" cx="264.6" cy="140.8" r="4.5" fill="transparent" data-tt="Semana del 26 ene 2026|39 tickets"/>
+      <circle class="pt" cx="292.9" cy="123.0" r="4.5" fill="transparent" data-tt="Semana del 2 feb 2026|49 tickets"/>
+      <circle class="pt" cx="321.2" cy="98.2" r="4.5" fill="transparent" data-tt="Semana del 9 feb 2026|63 tickets"/>
+      <circle class="pt" cx="349.5" cy="142.6" r="4.5" fill="transparent" data-tt="Semana del 16 feb 2026|38 tickets"/>
+      <circle class="pt" cx="377.8" cy="119.5" r="4.5" fill="transparent" data-tt="Semana del 23 feb 2026|51 tickets"/>
+      <circle class="pt" cx="406.1" cy="82.2" r="4.5" fill="transparent" data-tt="Semana del 2 mar 2026|72 tickets"/>
+      <circle class="pt" cx="434.4" cy="108.8" r="4.5" fill="transparent" data-tt="Semana del 9 mar 2026|57 tickets"/>
+      <circle class="pt" cx="462.7" cy="62.7" r="4.5" fill="transparent" data-tt="Semana del 16 mar 2026|83 tickets"/>
+      <circle class="pt" cx="491.0" cy="114.2" r="4.5" fill="transparent" data-tt="Semana del 23 mar 2026|54 tickets"/>
+      <circle class="pt" cx="519.3" cy="165.6" r="4.5" fill="transparent" data-tt="Semana del 30 mar 2026|25 tickets"/>
+      <circle class="pt" cx="547.6" cy="149.7" r="4.5" fill="transparent" data-tt="Semana del 6 abr 2026|34 tickets"/>
+      <circle class="pt" cx="575.9" cy="119.5" r="4.5" fill="transparent" data-tt="Semana del 13 abr 2026|51 tickets"/>
+      <circle class="pt" cx="604.1" cy="36.1" r="4.5" fill="transparent" data-tt="Semana del 20 abr 2026|98 tickets · pico"/>
+      <circle class="pt" cx="632.4" cy="128.4" r="4.5" fill="transparent" data-tt="Semana del 27 abr 2026|46 tickets"/>
+      <circle class="pt" cx="660.7" cy="94.6" r="4.5" fill="transparent" data-tt="Semana del 4 may 2026|65 tickets"/>
+      <circle class="pt" cx="689.0" cy="140.8" r="4.5" fill="transparent" data-tt="Semana del 11 may 2026|39 tickets"/>
+      <circle class="pt" cx="717.3" cy="108.8" r="4.5" fill="transparent" data-tt="Semana del 18 may 2026|57 tickets"/>
+      <circle class="pt" cx="745.6" cy="76.9" r="4.5" fill="transparent" data-tt="Semana del 25 may 2026|75 tickets"/>
+      <circle class="pt" cx="773.9" cy="130.1" r="4.5" fill="transparent" data-tt="Semana del 1 jun 2026|45 tickets"/>
+      <circle class="pt" cx="802.2" cy="96.4" r="4.5" fill="transparent" data-tt="Semana del 8 jun 2026|64 tickets"/>
+      <circle class="pt" cx="830.5" cy="119.5" r="4.5" fill="transparent" data-tt="Semana del 15 jun 2026|51 tickets"/>
+      <circle class="pt" cx="858.8" cy="140.8" r="4.5" fill="transparent" data-tt="Semana del 22 jun 2026|39 tickets"/>
+      <circle class="pt" cx="887.1" cy="85.8" r="4.5" fill="transparent" data-tt="Semana del 29 jun 2026|70 tickets"/>
+      <circle class="pt" cx="915.4" cy="117.7" r="4.5" fill="transparent" data-tt="Semana del 6 jul 2026|52 tickets"/>
+      <circle class="pt" cx="943.7" cy="123.0" r="4.5" fill="transparent" data-tt="Semana del 13 jul 2026|49 tickets"/>
+      <circle class="pt" cx="972.0" cy="107.1" r="4.5" fill="transparent" data-tt="Semana del 20 jul 2026|58 tickets"/>
+      <circle class="pt" cx="1000.2" cy="156.8" r="4.5" fill="transparent" data-tt="Semana del 27 jul 2026|30 tickets"/>
+      <circle class="pt" cx="1028.5" cy="139.0" r="4.5" fill="transparent" data-tt="Semana del 3 ago 2026|40 tickets"/>
+      <circle class="pt" cx="1056.8" cy="160.3" r="4.5" fill="transparent" data-tt="Semana del 10 ago 2026|28 tickets"/>
+      <circle class="pt" cx="1085.1" cy="183.4" r="4.5" fill="transparent" data-tt="Semana del 17 ago 2026|15 tickets"/>
+      <circle class="pt" cx="1113.4" cy="153.2" r="4.5" fill="transparent" data-tt="Semana del 24 ago 2026|32 tickets"/>
+      <circle class="pt" cx="1141.7" cy="117.7" r="4.5" fill="transparent" data-tt="Semana del 31 ago 2026|52 tickets"/>
+      <circle class="pt" cx="1170.0" cy="186.9" r="4.5" fill="transparent" data-tt="Semana del 7 sep 2026|13 tickets"/>
+      <circle cx="10.0" cy="202.9" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="38.3" cy="123.0" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="66.6" cy="147.9" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="94.9" cy="91.1" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="123.2" cy="194.0" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="151.5" cy="201.1" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="179.8" cy="105.3" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="208.0" cy="94.6" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="236.3" cy="80.5" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="264.6" cy="140.8" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="292.9" cy="123.0" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="321.2" cy="98.2" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="349.5" cy="142.6" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="377.8" cy="119.5" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="406.1" cy="82.2" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="434.4" cy="108.8" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="462.7" cy="62.7" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="491.0" cy="114.2" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="519.3" cy="165.6" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="547.6" cy="149.7" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="575.9" cy="119.5" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="604.1" cy="36.1" r="4.2" fill="var(--navy)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="632.4" cy="128.4" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="660.7" cy="94.6" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="689.0" cy="140.8" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="717.3" cy="108.8" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="745.6" cy="76.9" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="773.9" cy="130.1" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="802.2" cy="96.4" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="830.5" cy="119.5" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="858.8" cy="140.8" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="887.1" cy="85.8" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="915.4" cy="117.7" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="943.7" cy="123.0" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="972.0" cy="107.1" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="1000.2" cy="156.8" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="1028.5" cy="139.0" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="1056.8" cy="160.3" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="1085.1" cy="183.4" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="1113.4" cy="153.2" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="1141.7" cy="117.7" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+      <circle cx="1170.0" cy="186.9" r="3.5" fill="var(--blue)" stroke="#fff" stroke-width="1.5" pointer-events="none"/>
+
+      <path d="M 10.0,206.5 L 38.3,149.7 L 66.6,162.1 L 94.9,115.9 L 123.2,199.4 L 151.5,208.2 L 179.8,142.6 L 208.0,130.1 L 236.3,123.0 L 264.6,172.7 L 292.9,149.7 L 321.2,149.7 L 349.5,162.1 L 377.8,153.2 L 406.1,119.5 L 434.4,146.1 L 462.7,100.0 L 491.0,133.7 L 519.3,178.1 L 547.6,162.1 L 575.9,147.9 L 604.1,73.4 L 632.4,144.3 L 660.7,133.7 L 689.0,156.8 L 717.3,155.0 L 745.6,114.2 L 773.9,151.4 L 802.2,130.1 L 830.5,144.3 L 858.8,167.4 L 887.1,121.3 L 915.4,153.2 L 943.7,149.7 L 972.0,139.0 L 1000.2,169.2 L 1028.5,165.6 L 1056.8,167.4 L 1085.1,190.5 L 1113.4,179.8 L 1141.7,165.6 L 1170.0,199.4" fill="none" stroke="#6a3f9e" stroke-width="2.2" stroke-dasharray="5 4"/>
+      <circle class="pt" cx="10.0" cy="206.5" r="4.5" fill="transparent" data-tt="Semana del 24 nov 2025|2 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="38.3" cy="149.7" r="4.5" fill="transparent" data-tt="Semana del 1 dic 2025|34 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="66.6" cy="162.1" r="4.5" fill="transparent" data-tt="Semana del 8 dic 2025|27 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="94.9" cy="115.9" r="4.5" fill="transparent" data-tt="Semana del 15 dic 2025|53 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="123.2" cy="199.4" r="4.5" fill="transparent" data-tt="Semana del 22 dic 2025|6 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="151.5" cy="208.2" r="4.5" fill="transparent" data-tt="Semana del 29 dic 2025|1 ticket · Aigües de Sabadell"/>
+      <circle class="pt" cx="179.8" cy="142.6" r="4.5" fill="transparent" data-tt="Semana del 5 ene 2026|38 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="208.0" cy="130.1" r="4.5" fill="transparent" data-tt="Semana del 12 ene 2026|45 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="236.3" cy="123.0" r="4.5" fill="transparent" data-tt="Semana del 19 ene 2026|49 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="264.6" cy="172.7" r="4.5" fill="transparent" data-tt="Semana del 26 ene 2026|21 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="292.9" cy="149.7" r="4.5" fill="transparent" data-tt="Semana del 2 feb 2026|34 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="321.2" cy="149.7" r="4.5" fill="transparent" data-tt="Semana del 9 feb 2026|34 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="349.5" cy="162.1" r="4.5" fill="transparent" data-tt="Semana del 16 feb 2026|27 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="377.8" cy="153.2" r="4.5" fill="transparent" data-tt="Semana del 23 feb 2026|32 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="406.1" cy="119.5" r="4.5" fill="transparent" data-tt="Semana del 2 mar 2026|51 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="434.4" cy="146.1" r="4.5" fill="transparent" data-tt="Semana del 9 mar 2026|36 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="462.7" cy="100.0" r="4.5" fill="transparent" data-tt="Semana del 16 mar 2026|62 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="491.0" cy="133.7" r="4.5" fill="transparent" data-tt="Semana del 23 mar 2026|43 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="519.3" cy="178.1" r="4.5" fill="transparent" data-tt="Semana del 30 mar 2026|18 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="547.6" cy="162.1" r="4.5" fill="transparent" data-tt="Semana del 6 abr 2026|27 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="575.9" cy="147.9" r="4.5" fill="transparent" data-tt="Semana del 13 abr 2026|35 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="604.1" cy="73.4" r="4.5" fill="transparent" data-tt="Semana del 20 abr 2026|77 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="632.4" cy="144.3" r="4.5" fill="transparent" data-tt="Semana del 27 abr 2026|37 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="660.7" cy="133.7" r="4.5" fill="transparent" data-tt="Semana del 4 may 2026|43 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="689.0" cy="156.8" r="4.5" fill="transparent" data-tt="Semana del 11 may 2026|30 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="717.3" cy="155.0" r="4.5" fill="transparent" data-tt="Semana del 18 may 2026|31 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="745.6" cy="114.2" r="4.5" fill="transparent" data-tt="Semana del 25 may 2026|54 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="773.9" cy="151.4" r="4.5" fill="transparent" data-tt="Semana del 1 jun 2026|33 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="802.2" cy="130.1" r="4.5" fill="transparent" data-tt="Semana del 8 jun 2026|45 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="830.5" cy="144.3" r="4.5" fill="transparent" data-tt="Semana del 15 jun 2026|37 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="858.8" cy="167.4" r="4.5" fill="transparent" data-tt="Semana del 22 jun 2026|24 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="887.1" cy="121.3" r="4.5" fill="transparent" data-tt="Semana del 29 jun 2026|50 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="915.4" cy="153.2" r="4.5" fill="transparent" data-tt="Semana del 6 jul 2026|32 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="943.7" cy="149.7" r="4.5" fill="transparent" data-tt="Semana del 13 jul 2026|34 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="972.0" cy="139.0" r="4.5" fill="transparent" data-tt="Semana del 20 jul 2026|40 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="1000.2" cy="169.2" r="4.5" fill="transparent" data-tt="Semana del 27 jul 2026|23 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="1028.5" cy="165.6" r="4.5" fill="transparent" data-tt="Semana del 3 ago 2026|25 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="1056.8" cy="167.4" r="4.5" fill="transparent" data-tt="Semana del 10 ago 2026|24 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="1085.1" cy="190.5" r="4.5" fill="transparent" data-tt="Semana del 17 ago 2026|11 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="1113.4" cy="179.8" r="4.5" fill="transparent" data-tt="Semana del 24 ago 2026|17 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="1141.7" cy="165.6" r="4.5" fill="transparent" data-tt="Semana del 31 ago 2026|25 tickets · Aigües de Sabadell"/>
+      <circle class="pt" cx="1170.0" cy="199.4" r="4.5" fill="transparent" data-tt="Semana del 7 sep 2026|6 tickets · Aigües de Sabadell"/>
+      <circle cx="10.0" cy="206.5" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="38.3" cy="149.7" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="66.6" cy="162.1" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="94.9" cy="115.9" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="123.2" cy="199.4" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="151.5" cy="208.2" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="179.8" cy="142.6" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="208.0" cy="130.1" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="236.3" cy="123.0" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="264.6" cy="172.7" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="292.9" cy="149.7" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="321.2" cy="149.7" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="349.5" cy="162.1" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="377.8" cy="153.2" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="406.1" cy="119.5" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="434.4" cy="146.1" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="462.7" cy="100.0" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="491.0" cy="133.7" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="519.3" cy="178.1" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="547.6" cy="162.1" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="575.9" cy="147.9" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="604.1" cy="73.4" r="3.6" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="632.4" cy="144.3" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="660.7" cy="133.7" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="689.0" cy="156.8" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="717.3" cy="155.0" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="745.6" cy="114.2" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="773.9" cy="151.4" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="802.2" cy="130.1" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="830.5" cy="144.3" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="858.8" cy="167.4" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="887.1" cy="121.3" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="915.4" cy="153.2" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="943.7" cy="149.7" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="972.0" cy="139.0" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="1000.2" cy="169.2" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="1028.5" cy="165.6" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="1056.8" cy="167.4" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="1085.1" cy="190.5" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="1113.4" cy="179.8" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="1141.7" cy="165.6" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+      <circle cx="1170.0" cy="199.4" r="3" fill="#6a3f9e" stroke="#fff" stroke-width="1.2" pointer-events="none"/>
+    </svg>
+    <div class="chart-axis-labels">
+      <span style="left:0.85%">24 nov</span>
+      <span style="left:10.44%">22 dic</span>
+      <span style="left:20.03%">19 ene</span>
+      <span style="left:29.62%">16 feb</span>
+      <span style="left:39.21%">16 mar</span>
+      <span style="left:48.80%">13 abr</span>
+      <span style="left:58.39%">11 may</span>
+      <span style="left:67.98%">8 jun</span>
+      <span style="left:77.57%">6 jul</span>
+      <span style="left:87.16%">3 ago</span>
+      <span style="left:99.15%">7 sep</span>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-panel">
+      <h2>Tickets por estado</h2>
+      <p class="chart-sub">Distribución por estado actual del ticket</p>
+      <div class="bar-row" title="Closed: 1659 tickets (83,0%)">
+        <div class="bar-label">Closed</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div>
+        <div class="bar-value">1659 <span class="bar-pct">(83,0%)</span></div>
+      </div>
+      <div class="bar-row" title="Cancelled: 212 tickets (10,6%)">
+        <div class="bar-label">Cancelled</div>
+        <div class="bar-track"><div class="bar-fill" style="width:12.8%"></div></div>
+        <div class="bar-value">212 <span class="bar-pct">(10,6%)</span></div>
+      </div>
+      <div class="bar-row" title="Assigned: 71 tickets (3,5%)">
+        <div class="bar-label">Assigned</div>
+        <div class="bar-track"><div class="bar-fill" style="width:4.3%"></div></div>
+        <div class="bar-value">71 <span class="bar-pct">(3,5%)</span></div>
+      </div>
+      <div class="bar-row" title="Pending: 22 tickets (1,1%)">
+        <div class="bar-label">Pending</div>
+        <div class="bar-track"><div class="bar-fill" style="width:1.3%"></div></div>
+        <div class="bar-value">22 <span class="bar-pct">(1,1%)</span></div>
+      </div>
+      <div class="bar-row" title="Resolved: 13 tickets (0,7%)">
+        <div class="bar-label">Resolved</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0.8%"></div></div>
+        <div class="bar-value">13 <span class="bar-pct">(0,7%)</span></div>
+      </div>
+      <div class="bar-row" title="Completed: 7 tickets (0,4%)">
+        <div class="bar-label">Completed</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0.4%"></div></div>
+        <div class="bar-value">7 <span class="bar-pct">(0,4%)</span></div>
+      </div>
+      <div class="bar-row" title="Rejected: 7 tickets (0,4%)">
+        <div class="bar-label">Rejected</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0.4%"></div></div>
+        <div class="bar-value">7 <span class="bar-pct">(0,4%)</span></div>
+      </div>
+      <div class="bar-row" title="In Progress: 5 tickets (0,2%)">
+        <div class="bar-label">In Progress</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0.3%"></div></div>
+        <div class="bar-value">5 <span class="bar-pct">(0,2%)</span></div>
+      </div>
+      <div class="bar-row" title="Waiting Approval: 2 tickets (0,1%)">
+        <div class="bar-label">Waiting Approval</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0.1%"></div></div>
+        <div class="bar-value">2 <span class="bar-pct">(0,1%)</span></div>
+      </div>
+      <div class="bar-row" title="Planning: 2 tickets (0,1%)">
+        <div class="bar-label">Planning</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0.1%"></div></div>
+        <div class="bar-value">2 <span class="bar-pct">(0,1%)</span></div>
+      </div>
+    </div>
+
+    <div class="chart-panel">
+      <h2>Top 15 personas · CAU</h2>
+      <p class="chart-sub">Quién más tickets ha generado como solicitante (Customer full name)</p>
+      <div class="bar-row" title="Francesc Gallego Palomo: 197 tickets (9,8%)">
+        <div class="bar-label">Francesc Gallego Palomo</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div>
+        <div class="bar-value">197 <span class="bar-pct">(9,8%)</span></div>
+      </div>
+      <div class="bar-row" title="Maria Angeles Campos López: 186 tickets (9,3%)">
+        <div class="bar-label">Maria Angeles Campos López</div>
+        <div class="bar-track"><div class="bar-fill" style="width:94.4%"></div></div>
+        <div class="bar-value">186 <span class="bar-pct">(9,3%)</span></div>
+      </div>
+      <div class="bar-row" title="Laura Romero Raposo: 93 tickets (4,7%)">
+        <div class="bar-label">Laura Romero Raposo</div>
+        <div class="bar-track"><div class="bar-fill" style="width:47.2%"></div></div>
+        <div class="bar-value">93 <span class="bar-pct">(4,7%)</span></div>
+      </div>
+      <div class="bar-row" title="Gerard Palou Alberti: 82 tickets (4,1%)">
+        <div class="bar-label">Gerard Palou Alberti</div>
+        <div class="bar-track"><div class="bar-fill" style="width:41.6%"></div></div>
+        <div class="bar-value">82 <span class="bar-pct">(4,1%)</span></div>
+      </div>
+      <div class="bar-row" title="Vicenç Torrella Suñé: 46 tickets (2,3%)">
+        <div class="bar-label">Vicenç Torrella Suñé</div>
+        <div class="bar-track"><div class="bar-fill" style="width:23.4%"></div></div>
+        <div class="bar-value">46 <span class="bar-pct">(2,3%)</span></div>
+      </div>
+      <div class="bar-row" title="Anna Núñez Arias: 44 tickets (2,2%)">
+        <div class="bar-label">Anna Núñez Arias</div>
+        <div class="bar-track"><div class="bar-fill" style="width:22.3%"></div></div>
+        <div class="bar-value">44 <span class="bar-pct">(2,2%)</span></div>
+      </div>
+      <div class="bar-row" title="Daniel Jimeno Arribas: 39 tickets (1,9%)">
+        <div class="bar-label">Daniel Jimeno Arribas</div>
+        <div class="bar-track"><div class="bar-fill" style="width:19.8%"></div></div>
+        <div class="bar-value">39 <span class="bar-pct">(1,9%)</span></div>
+      </div>
+      <div class="bar-row" title="Ana Belén Duque Gutiérrez: 35 tickets (1,8%)">
+        <div class="bar-label">Ana Belén Duque Gutiérrez</div>
+        <div class="bar-track"><div class="bar-fill" style="width:17.8%"></div></div>
+        <div class="bar-value">35 <span class="bar-pct">(1,8%)</span></div>
+      </div>
+      <div class="bar-row" title="Mireia Guillén Saenz: 31 tickets (1,6%)">
+        <div class="bar-label">Mireia Guillén Saenz</div>
+        <div class="bar-track"><div class="bar-fill" style="width:15.7%"></div></div>
+        <div class="bar-value">31 <span class="bar-pct">(1,6%)</span></div>
+      </div>
+      <div class="bar-row" title="Núria Jiménez Carrillo: 31 tickets (1,6%)">
+        <div class="bar-label">Núria Jiménez Carrillo</div>
+        <div class="bar-track"><div class="bar-fill" style="width:15.7%"></div></div>
+        <div class="bar-value">31 <span class="bar-pct">(1,6%)</span></div>
+      </div>
+      <div class="bar-row" title="Cristina Fabregas Peret: 31 tickets (1,6%)">
+        <div class="bar-label">Cristina Fabregas Peret</div>
+        <div class="bar-track"><div class="bar-fill" style="width:15.7%"></div></div>
+        <div class="bar-value">31 <span class="bar-pct">(1,6%)</span></div>
+      </div>
+      <div class="bar-row" title="Arnau Salmons Gonzalez: 28 tickets (1,4%)">
+        <div class="bar-label">Arnau Salmons Gonzalez</div>
+        <div class="bar-track"><div class="bar-fill" style="width:14.2%"></div></div>
+        <div class="bar-value">28 <span class="bar-pct">(1,4%)</span></div>
+      </div>
+      <div class="bar-row" title="Elisabet Oliver Pericas: 27 tickets (1,4%)">
+        <div class="bar-label">Elisabet Oliver Pericas</div>
+        <div class="bar-track"><div class="bar-fill" style="width:13.7%"></div></div>
+        <div class="bar-value">27 <span class="bar-pct">(1,4%)</span></div>
+      </div>
+      <div class="bar-row" title="Julian Guerrero Yañez: 26 tickets (1,3%)">
+        <div class="bar-label">Julian Guerrero Yañez</div>
+        <div class="bar-track"><div class="bar-fill" style="width:13.2%"></div></div>
+        <div class="bar-value">26 <span class="bar-pct">(1,3%)</span></div>
+      </div>
+      <div class="bar-row" title="Patricia Garcia Ventosa: 26 tickets (1,3%)">
+        <div class="bar-label">Patricia Garcia Ventosa</div>
+        <div class="bar-track"><div class="bar-fill" style="width:13.2%"></div></div>
+        <div class="bar-value">26 <span class="bar-pct">(1,3%)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <h2>Tickets asignados por técnico</h2>
+    <p class="chart-sub">Todos los tickets asignados a Francesc Gallego Palomo, Maria Angeles Campos Lopez, Jeroni Matutes Trepat, Gerard Palou Alberti y Vicenç Torrella (jubilado en feb. 2026), completados frente a abiertos actualmente.</p>
+    <div class="legend-row">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Completados</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#b7c1d4"></span>Abiertos</div>
+    </div>
+    <div class="stacked-chart">
+      <div class="stack-col">
+        <div class="stack-total">185</div>
+        <div class="stack-bar">
+          <div class="stack-seg" style="height:211.7px; background:var(--blue);" data-tt="Francesc Gallego Palomo|Completados · 178 tickets"></div>
+          <div class="stack-seg" style="height:8.3px; background:#b7c1d4;" data-tt="Francesc Gallego Palomo|Abiertos · 7 tickets"></div>
+        </div>
+      </div>
+      <div class="stack-col">
+        <div class="stack-total">147</div>
+        <div class="stack-bar">
+          <div class="stack-seg" style="height:141.5px; background:var(--blue);" data-tt="Maria Angeles Campos Lopez|Completados · 119 tickets"></div>
+          <div class="stack-seg" style="height:33.3px; background:#b7c1d4;" data-tt="Maria Angeles Campos Lopez|Abiertos · 28 tickets"></div>
+        </div>
+      </div>
+      <div class="stack-col">
+        <div class="stack-total">8</div>
+        <div class="stack-bar">
+          <div class="stack-seg" style="height:9.5px; background:var(--blue);" data-tt="Jeroni Matutes Trepat|Completados · 8 tickets"></div>
+        </div>
+      </div>
+      <div class="stack-col">
+        <div class="stack-total">91</div>
+        <div class="stack-bar">
+          <div class="stack-seg" style="height:108.2px; background:var(--blue);" data-tt="Gerard Palou Alberti|Completados · 91 tickets"></div>
+        </div>
+      </div>
+      <div class="stack-col">
+        <div class="stack-total">38</div>
+        <div class="stack-bar">
+          <div class="stack-seg" style="height:45.2px; background:var(--blue);" data-tt="Vicenç Torrella|Completados · 38 tickets"></div>
+        </div>
+      </div>
+    </div>
+    <div class="stack-names">
+      <div class="stack-name">Francesc Gallego Palomo</div>
+      <div class="stack-name">Maria Angeles Campos Lopez</div>
+      <div class="stack-name">Jeroni Matutes Trepat</div>
+      <div class="stack-name">Gerard Palou Alberti</div>
+      <div class="stack-name">Vicenç Torrella<br><span style="font-size:10px;color:var(--mut);">(jubilado feb. 2026)</span></div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <h2>Tickets abiertos hacia Veolia por técnico</h2>
+    <p class="chart-sub">Tickets en los que Francesc, Maria Angeles, Jeroni, Gerard o Vicenç figuran como solicitantes (Customer full name) y se derivan a una organización externa para su resolución, completados frente a abiertos. No incluye tickets sin organización asignada.</p>
+    <div class="legend-row">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Completados</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#b7c1d4"></span>Abiertos</div>
+    </div>
+    <div class="stacked-chart">
+      <div class="stack-col">
+        <div class="stack-total">120</div>
+        <div class="stack-bar">
+          <div class="stack-seg" style="height:218.2px; background:var(--blue);" data-tt="Francesc Gallego Palomo|Completados · 119 tickets"></div>
+          <div class="stack-seg" style="height:1.8px; background:#b7c1d4;" data-tt="Francesc Gallego Palomo|Abiertos · 1 ticket"></div>
+        </div>
+      </div>
+      <div class="stack-col">
+        <div class="stack-total">106</div>
+        <div class="stack-bar">
+          <div class="stack-seg" style="height:194.3px; background:var(--blue);" data-tt="Maria Angeles Campos López|Completados · 106 tickets"></div>
+        </div>
+      </div>
+      <div class="stack-col">
+        <div class="stack-total">0</div>
+        <div class="stack-bar" style="border:1.5px dashed var(--line); min-height:2px;"></div>
+      </div>
+      <div class="stack-col">
+        <div class="stack-total">62</div>
+        <div class="stack-bar">
+          <div class="stack-seg" style="height:113.7px; background:var(--blue);" data-tt="Gerard Palou Alberti|Completados · 62 tickets"></div>
+        </div>
+      </div>
+      <div class="stack-col">
+        <div class="stack-total">45</div>
+        <div class="stack-bar">
+          <div class="stack-seg" style="height:82.5px; background:var(--blue);" data-tt="Vicenç Torrella|Completados · 45 tickets"></div>
+        </div>
+      </div>
+    </div>
+    <div class="stack-names">
+      <div class="stack-name">Francesc Gallego Palomo</div>
+      <div class="stack-name">Maria Angeles Campos Lopez</div>
+      <div class="stack-name">Jeroni Matutes Trepat</div>
+      <div class="stack-name">Gerard Palou Alberti</div>
+      <div class="stack-name">Vicenç Torrella</div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-panel">
+      <h2>Top 10 departamentos</h2>
+      <p class="chart-sub">Departamento del cliente que abre el ticket</p>
+      <div class="bar-row" title="Sistemas de Informacion: 551 tickets (27,6%)">
+        <div class="bar-label">Sistemas de Información</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div>
+        <div class="bar-value">551 <span class="bar-pct">(27,6%)</span></div>
+      </div>
+      <div class="bar-row" title="Back Office: 244 tickets (12,2%)">
+        <div class="bar-label">Back Office</div>
+        <div class="bar-track"><div class="bar-fill" style="width:44.3%"></div></div>
+        <div class="bar-value">244 <span class="bar-pct">(12,2%)</span></div>
+      </div>
+      <div class="bar-row" title="Digitalizacion y Soporte Operaciones: 210 tickets (10,5%)">
+        <div class="bar-label">Digitalización y Soporte Operaciones</div>
+        <div class="bar-track"><div class="bar-fill" style="width:38.1%"></div></div>
+        <div class="bar-value">210 <span class="bar-pct">(10,5%)</span></div>
+      </div>
+      <div class="bar-row" title="Front Office y CAT: 130 tickets (6,5%)">
+        <div class="bar-label">Front Office y CAT</div>
+        <div class="bar-track"><div class="bar-fill" style="width:23.6%"></div></div>
+        <div class="bar-value">130 <span class="bar-pct">(6,5%)</span></div>
+      </div>
+      <div class="bar-row" title="Dir. Economico - Financiera: 119 tickets (5,9%)">
+        <div class="bar-label">Dir. Económico-Financiera</div>
+        <div class="bar-track"><div class="bar-fill" style="width:21.6%"></div></div>
+        <div class="bar-value">119 <span class="bar-pct">(5,9%)</span></div>
+      </div>
+      <div class="bar-row" title="Oficina Projectes: 85 tickets (4,2%)">
+        <div class="bar-label">Oficina Projectes</div>
+        <div class="bar-track"><div class="bar-fill" style="width:15.4%"></div></div>
+        <div class="bar-value">85 <span class="bar-pct">(4,2%)</span></div>
+      </div>
+      <div class="bar-row" title="Ingenieria Barcelona: 78 tickets (3,9%)">
+        <div class="bar-label">Ingeniería Barcelona</div>
+        <div class="bar-track"><div class="bar-fill" style="width:14.2%"></div></div>
+        <div class="bar-value">78 <span class="bar-pct">(3,9%)</span></div>
+      </div>
+      <div class="bar-row" title="Compras y Logistica: 73 tickets (3,6%)">
+        <div class="bar-label">Compras y Logística</div>
+        <div class="bar-track"><div class="bar-fill" style="width:13.2%"></div></div>
+        <div class="bar-value">73 <span class="bar-pct">(3,6%)</span></div>
+      </div>
+      <div class="bar-row" title="Explotacion Agua: 55 tickets (2,8%)">
+        <div class="bar-label">Explotación Agua</div>
+        <div class="bar-track"><div class="bar-fill" style="width:10.0%"></div></div>
+        <div class="bar-value">55 <span class="bar-pct">(2,8%)</span></div>
+      </div>
+      <div class="bar-row" title="Calidad Agua: 46 tickets (2,3%)">
+        <div class="bar-label">Calidad Agua</div>
+        <div class="bar-track"><div class="bar-fill" style="width:8.3%"></div></div>
+        <div class="bar-value">46 <span class="bar-pct">(2,3%)</span></div>
+      </div>
+    </div>
+
+    <div class="chart-panel">
+      <h2>Tickets por organización</h2>
+      <p class="chart-sub">Empresa del Grupo CASSA que factura el ticket</p>
+      <div class="bar-row" title="COMPANYIA D' AIGÜES DE SABADELL, S.A.: 1373 tickets (68,7%)">
+        <div class="bar-label">Companyia d'Aigües de Sabadell</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div>
+        <div class="bar-value">1373 <span class="bar-pct">(68,7%)</span></div>
+      </div>
+      <div class="bar-row" title="CASSA AIGÜES I DEPURACIO, S.L.U.: 545 tickets (27,3%)">
+        <div class="bar-label">Cassa Aigües i Depuració</div>
+        <div class="bar-track"><div class="bar-fill" style="width:39.7%"></div></div>
+        <div class="bar-value">545 <span class="bar-pct">(27,3%)</span></div>
+      </div>
+      <div class="bar-row" title="SOCADE INFORMATICA, S.L.U.: 78 tickets (3,9%)">
+        <div class="bar-label">Socade Informàtica</div>
+        <div class="bar-track"><div class="bar-fill" style="width:5.7%"></div></div>
+        <div class="bar-value">78 <span class="bar-pct">(3,9%)</span></div>
+      </div>
+      <div class="bar-row" title="Ute Cassa Rial: 4 tickets (0,2%)">
+        <div class="bar-label">Ute Cassa Rial</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0.3%"></div></div>
+        <div class="bar-value">4 <span class="bar-pct">(0,2%)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="page-footnote">Datos extraídos de Remedy · exportación del 9 sep 2026</p>
+
+</div>
+
+<script>
+  (function(){
+    var tip = document.getElementById('viz-tooltip');
+
+    function render(text){
+      var parts = text.split('|');
+      if(parts.length > 1){
+        tip.innerHTML = parts[0] + '<div class="tt-sub">' + parts[1] + '</div>';
+      } else {
+        tip.textContent = text;
+      }
+    }
+    function move(e){
+      var pad = 16;
+      var x = e.clientX + pad;
+      var y = e.clientY + pad;
+      var tw = tip.offsetWidth, th = tip.offsetHeight;
+      if(x + tw > window.innerWidth) x = e.clientX - tw - pad;
+      if(y + th > window.innerHeight) y = e.clientY - th - pad;
+      tip.style.left = x + 'px';
+      tip.style.top = y + 'px';
+    }
+    function hide(){ tip.style.display = 'none'; }
+
+    document.querySelectorAll('[data-tt]').forEach(function(el){
+      el.addEventListener('mouseenter', function(e){
+        render(el.getAttribute('data-tt'));
+        tip.style.display = 'block';
+        move(e);
+      });
+      el.addEventListener('mousemove', move);
+      el.addEventListener('mouseleave', hide);
+    });
+  })();
+</script>
+
+</body>
+</html>

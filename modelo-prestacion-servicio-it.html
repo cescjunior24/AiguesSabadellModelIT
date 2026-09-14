@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modelo de prestación de servicio · Soporte IT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16233f;
+    --navy-2:#1d3157;
+    --blue:#2f5fa8;
+    --blue-soft:#eaf0fa;
+    --purple:#6a3f9e;
+    --purple-soft:#f1e9fa;
+    --ink:#1b2433;
+    --mut:#5b6778;
+    --line:#d7dee9;
+    --bg:#f4f6fa;
+    --card:#ffffff;
+    --good:#1f7a4d;
+    --good-soft:#e8f5ee;
+    --good-line:#bfe3cf;
+    --warn:#b5791f;
+    --warn-soft:#fff6e9;
+    --warn-line:#ecc98a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    width:100%;
+    max-width:1720px;
+    margin:0 auto;
+    background:var(--bg);
+    font-family:'IBM Plex Sans', sans-serif;
+    color:var(--ink);
+    padding:40px 50px 34px;
+  }
+  img,svg{ max-width:100%; }
+
+  header{ margin-bottom:20px; }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:32px;
+    font-weight:700;
+    margin:0 0 4px;
+    color:var(--navy);
+    letter-spacing:-0.01em;
+  }
+  h1 .sep{ color:#9aa6bb; font-weight:500; margin:0 10px; }
+  .subtitle{
+    font-size:14px;
+    color:var(--mut);
+    margin:0;
+  }
+
+  .panel{
+    background:var(--card);
+    border:1.5px solid var(--line);
+    border-radius:14px;
+    padding:18px 20px 20px;
+  }
+  .panel-head{
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:14px;
+  }
+  .icon{
+    width:34px; height:34px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .icon svg{ width:18px; height:18px; }
+  .panel-title{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:15.5px;
+    font-weight:600;
+    color:var(--navy);
+  }
+  .panel-title .who{
+    font-weight:400;
+    color:var(--mut);
+    font-size:13px;
+  }
+
+  /* ===== HUB: estructura general ===== */
+  .hub{
+    display:grid;
+    grid-template-columns: 1fr 440px 1fr;
+    grid-template-areas:
+      "servicios servicios usuarios"
+      "connector connector connector"
+      "canales   proposito procesos"
+      "herramientas .     proveedores"
+      "tickets   tickets  tickets"
+      "kpis      kpis     kpis";
+    column-gap:24px;
+    row-gap:16px;
+    align-items:start;
+    margin-bottom:16px;
+  }
+  #servicios{ grid-area:servicios; align-self:stretch; }
+  #usuarios{ grid-area:usuarios; align-self:stretch; }
+  #canales{ grid-area:canales; }
+  #proposito{ grid-area:proposito; position:relative; }
+  #procesos{ grid-area:procesos; }
+  #herramientas{ grid-area:herramientas; }
+  #proveedores{ grid-area:proveedores; }
+  #tickets{ grid-area:tickets; }
+  #kpis{ grid-area:kpis; }
+
+  .conn-row{
+    grid-area:connector;
+    position:relative;
+    display:grid;
+    grid-template-columns: 1fr 440px 1fr;
+    column-gap:24px;
+    height:26px;
+  }
+  .conn-row::before{
+    content:'';
+    position:absolute; left:0; right:0; top:50%;
+    border-top:2px dashed #c3cddf;
+  }
+  .conn-row .stub{
+    width:0; height:100%;
+    border-left:2px dashed #c3cddf;
+    justify-self:center;
+  }
+  #proposito::before,
+  #proposito::after{
+    content:'';
+    position:absolute; top:50%; width:24px; height:0;
+    border-top:2px dashed #c3cddf;
+  }
+  #proposito::before{ left:-24px; }
+  #proposito::after{ right:-24px; }
+
+  /* ===== SERVICIOS ===== */
+  .svc-cols{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:14px;
+  }
+  .svc-col{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:13px 14px 14px;
+    display:flex; flex-direction:column;
+  }
+  .svc-col .sc-head{
+    display:flex; align-items:center; gap:8px;
+    margin-bottom:10px;
+  }
+  .svc-col .sc-icon{
+    width:28px; height:28px; border-radius:50%;
+    background:var(--blue-soft);
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .svc-col .sc-icon svg{ width:15px; height:15px; stroke:var(--blue); }
+  .svc-col .sc-title{ font-size:13px; font-weight:600; color:var(--ink); }
+  .svc-col ul{ list-style:none; margin:0; padding:0; }
+  .svc-col li{
+    font-size:11.5px;
+    color:var(--mut);
+    line-height:1.45;
+    padding:4px 0 4px 14px;
+    position:relative;
+  }
+  .svc-col li::before{
+    content:'';
+    position:absolute; left:0; top:9px;
+    width:5px; height:5px; border-radius:1px;
+    background:var(--blue);
+  }
+  .svc-col li b{ color:var(--ink); font-weight:600; }
+  .svc-col li .indent{
+    display:block;
+    padding-left:14px;
+    font-size:11px;
+    color:#8890a0;
+  }
+
+  /* ===== PROPOSITO / USUARIOS ===== */
+  #proposito{
+    background:linear-gradient(160deg,var(--navy),#0f1930);
+    color:#fff;
+    display:flex; flex-direction:column;
+    padding:22px 28px 24px;
+  }
+  #proposito .target{
+    width:46px;height:46px;border-radius:50%;
+    background:rgba(255,255,255,.08);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 12px;
+  }
+  #proposito .target svg{ width:22px; height:22px; stroke:#fff; }
+  #proposito .p-title{
+    text-align:center;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:13.5px;
+    font-weight:600;
+    letter-spacing:.04em;
+    color:#cfe0ff;
+    margin-bottom:9px;
+  }
+  #proposito .p-body{
+    text-align:center;
+    font-size:13.5px;
+    line-height:1.5;
+    color:#eef2fa;
+    max-width:460px;
+    margin:0 auto 18px;
+  }
+  .flow{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    margin-top:auto;
+  }
+  .flow-step{
+    display:flex; flex-direction:column; align-items:center;
+    width:84px;
+  }
+  .flow-step .f-icon{
+    width:42px;height:42px;border-radius:50%;
+    background:rgba(255,255,255,.09);
+    border:1px solid rgba(255,255,255,.15);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:7px;
+  }
+  .flow-step .f-icon svg{ width:18px;height:18px; stroke:#dce6fb; }
+  .flow-step .f-label{
+    font-size:11px; text-align:center; color:#dce6fb; line-height:1.3;
+  }
+  .flow-arrow{ color:#5b6f96; font-size:16px; margin-top:12px; }
+  .flow-note{
+    margin-top:16px;
+    background:rgba(255,255,255,.08);
+    border-radius:9px;
+    padding:9px 14px;
+    text-align:center;
+    font-size:11.5px;
+    color:#cfe0ff;
+  }
+
+  #usuarios{ display:flex; flex-direction:column; }
+  #usuarios .icon{ background:var(--purple-soft); }
+  #usuarios .icon svg{ stroke:var(--purple); }
+  .usr-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    margin-bottom:14px;
+  }
+  .usr{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 10px;
+    text-align:center;
+  }
+  .usr .u-icon{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--purple-soft);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 8px;
+  }
+  .usr .u-icon svg{ width:19px;height:19px; stroke:var(--purple); }
+  .usr .u-title{ font-size:12.5px; font-weight:600; color:var(--ink); line-height:1.3;}
+  .usr .u-sub{ font-size:10.5px; color:var(--mut); line-height:1.3; margin-top:2px; }
+  .usr-section-label{
+    font-size:10.5px; font-weight:600; color:var(--mut);
+    text-transform:uppercase; letter-spacing:.04em;
+    margin:2px 0 7px;
+  }
+  .office-tags{
+    display:flex; flex-wrap:wrap; gap:7px;
+    margin-bottom:12px;
+  }
+  .office-tag{
+    background:var(--purple-soft);
+    color:var(--navy-2);
+    font-size:11.5px; font-weight:600;
+    padding:6px 12px;
+    border-radius:8px;
+  }
+  .office-tag.primary{
+    background:var(--purple);
+    color:#fff;
+  }
+  .foot-line{
+    font-size:11.5px; color:var(--mut); text-align:center;
+    margin-top:auto;
+  }
+
+  .proc-grid{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:9px;
+    margin-bottom:10px;
+  }
+  .proc{
+    display:flex; align-items:center; gap:9px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:9px 10px;
+  }
+  a.proc-link{
+    text-decoration:none;
+    color:inherit;
+    cursor:pointer;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  a.proc-link:hover{
+    border-color:var(--blue);
+    box-shadow:0 1px 4px rgba(47,95,168,.18);
+  }
+  .proc .p-icon{
+    width:26px;height:26px;border-radius:7px;
+    background:var(--blue-soft);
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .proc .p-icon svg{ width:14px;height:14px; stroke:var(--blue); }
+  .proc .p-title{ font-size:11.5px; font-weight:500; color:var(--ink); line-height:1.25; }
+
+  /* ===== CANALES / HERRAMIENTAS ===== */
+  .ch-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px 8px;
+    margin-bottom:12px;
+  }
+  .ch{ text-align:center; }
+  .ch .c-icon{
+    width:30px; height:30px; margin:0 auto 6px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ch .c-icon svg{ width:19px; height:19px; stroke:var(--navy-2); }
+  .ch .c-title{ font-size:11px; color:var(--ink); font-weight:500; }
+  .callout{
+    background:var(--blue-soft);
+    border-radius:9px;
+    padding:9px 12px;
+    font-size:11.5px;
+    color:var(--navy-2);
+    display:flex; align-items:center; gap:8px;
+  }
+  .callout .star{ flex:none; font-size:13px; }
+
+  .tool-grid{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:10px;
+  }
+  .tool-card{
+    display:flex; align-items:flex-start; gap:10px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:10px 12px;
+  }
+  .tool-card .t-icon{
+    width:30px; height:30px; border-radius:8px;
+    background:var(--blue-soft);
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .tool-card .t-icon svg{ width:16px; height:16px; stroke:var(--blue); }
+  .tool-card .t-title{ font-size:12.5px; font-weight:600; color:var(--ink); line-height:1.3; }
+  .tool-card .t-desc{ font-size:10.5px; color:var(--mut); line-height:1.35; margin-top:2px; }
+  .tool-card.pending{
+    border-style:dashed;
+    border-color:#c3c9d4;
+    align-items:center;
+    justify-content:center;
+  }
+  .tool-card.pending .t-title{ color:#8b93a3; font-weight:500; }
+
+  /* ===== PROVEEDORES ===== */
+  #proveedores .t-icon{ background:var(--purple-soft); }
+  #proveedores .t-icon svg{ stroke:var(--purple); }
+
+  .section-note{
+    font-size:11.5px; color:var(--mut); text-align:center;
+  }
+
+  /* ===== TICKETS REMEDY ===== */
+  .kpi-row{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+    margin-bottom:12px;
+  }
+  .kpi-tile{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px 18px;
+    display:flex; align-items:center; gap:14px;
+  }
+  .kpi-tile .k-icon{
+    width:42px; height:42px; border-radius:11px;
+    background:var(--blue-soft);
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .kpi-tile .k-icon svg{ width:21px; height:21px; stroke:var(--blue); }
+  .kpi-tile .k-value{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700; font-size:23px; color:var(--navy); line-height:1.15;
+    font-variant-numeric: tabular-nums;
+  }
+  .kpi-tile .k-label{ font-size:11.5px; color:var(--mut); line-height:1.35; margin-top:2px; }
+
+  .data-note{ font-size:11px; color:var(--mut); text-align:center; margin-bottom:14px; }
+
+  .btn-row{ display:flex; justify-content:center; }
+  .btn-primary{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--navy);
+    color:#fff;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13px; font-weight:600;
+    padding:11px 22px;
+    border-radius:9px;
+    text-decoration:none;
+    transition:background .15s;
+  }
+  .btn-primary:hover{ background:var(--navy-2); }
+  .btn-primary svg{ width:16px; height:16px; stroke:#fff; }
+
+  /* ===== KPIS ===== */
+  .kpi-status-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+    margin-bottom:14px;
+  }
+  .kpi-status-card{
+    border-radius:12px;
+    padding:16px 18px;
+    border:1.5px solid;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .kpi-status-card.good{ background:var(--good-soft); border-color:var(--good-line); }
+  .kpi-status-card.warn{ background:var(--warn-soft); border-color:var(--warn-line); }
+  .kpi-status-card .ks-top{ display:flex; align-items:center; gap:10px; }
+  .kpi-status-card .ks-icon{
+    width:36px; height:36px; border-radius:10px;
+    background:rgba(255,255,255,.65);
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .kpi-status-card .ks-icon svg{ width:18px; height:18px; }
+  .kpi-status-card.good .ks-icon svg{ stroke:var(--good); }
+  .kpi-status-card.warn .ks-icon svg{ stroke:var(--warn); }
+  .kpi-status-card .ks-name{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600; font-size:13px; color:var(--ink); line-height:1.3;
+  }
+  .kpi-status-card .ks-badge{
+    align-self:flex-start;
+    padding:3px 10px;
+    border-radius:999px;
+    font-size:10px; font-weight:700; letter-spacing:.03em;
+    color:#fff; text-transform:uppercase;
+  }
+  .kpi-status-card.good .ks-badge{ background:var(--good); }
+  .kpi-status-card.warn .ks-badge{ background:var(--warn); }
+  .kpi-status-card .ks-note{ font-size:11px; color:var(--mut); line-height:1.45; }
+
+  .kpi-summary{ font-size:12px; color:var(--mut); text-align:center; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width:1200px){
+    body{ padding:28px 24px 26px; }
+    .hub{ display:block; }
+    .hub .panel{ margin-bottom:16px; }
+    .conn-row{ display:none; }
+    #proposito::before, #proposito::after{ display:none; }
+    .svc-cols{ grid-template-columns: repeat(2, 1fr); }
+    .flow{ flex-wrap:wrap; row-gap:16px; justify-content:center; }
+    .flow-arrow{ display:none; }
+    .kpi-status-grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width:640px){
+    body{ padding:20px 16px 22px; }
+    h1{ font-size:24px; }
+    h1 .sep{ margin:0 6px; }
+    .svc-cols{ grid-template-columns: 1fr; }
+    .usr-grid{ grid-template-columns: 1fr; }
+    .proc-grid{ grid-template-columns: repeat(2, 1fr); }
+    .ch-grid{ grid-template-columns: repeat(2, 1fr); }
+    .flow{ flex-direction:column; align-items:center; gap:12px; }
+    .flow-step{ width:auto; }
+    #proposito{ padding:20px 18px 22px; }
+    .kpi-row{ grid-template-columns:1fr; }
+    .kpi-status-grid{ grid-template-columns: 1fr; }
+  }
+
+  @media (max-width:400px){
+    .proc-grid{ grid-template-columns: 1fr; }
+    .ch-grid{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Modelo de prestación de servicio<span class="sep">|</span>IT — Soporte a Usuario</h1>
+  <p class="subtitle">Vista de alto nivel para ordenar servicios, usuarios, procesos, herramientas y proveedores.</p>
+</header>
+
+<div class="hub">
+
+<!-- SERVICIOS -->
+<div class="panel" id="servicios">
+  <div class="panel-head">
+    <div class="icon" style="background:var(--blue-soft);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+    <div class="panel-title">SERVICIOS <span class="who">| Qué hacemos</span></div>
+  </div>
+  <div class="svc-cols">
+
+    <!-- Dispositivos -->
+    <div class="svc-col">
+      <div class="sc-head">
+        <div class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div class="sc-title">Dispositivos</div>
+      </div>
+      <ul>
+        <li><b>Maquetación</b> de ordenadores con Windows corporativo</li>
+        <li><b>Restauración</b> de ordenadores con Equipo Olvido</li>
+        <li><b>Mantenimiento</b> de ordenadores, actualizaciones, limpieza y revisión periódica</li>
+        <li>Gestión y configuración de <b>impresoras</b> (impresión y escaneo)</li>
+        <li><b>Enrolamiento</b> de móviles vía Airwatch o MDM de Google</li>
+        <li><b>Puesta en marcha</b> de dispositivos móviles y tablets</li>
+      </ul>
+    </div>
+
+    <!-- Redes y Conectividad -->
+    <div class="svc-col">
+      <div class="sc-head">
+        <div class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg></div>
+        <div class="sc-title">Redes y Conectividad</div>
+      </div>
+      <ul>
+        <li>Gestión de la red <b>IT</b></li>
+        <li>Gestión de la red <b>OT</b></li>
+        <li>Gestión de <b>firewall</b>, aplicando las reglas necesarias</li>
+      </ul>
+    </div>
+
+    <!-- Identidades -->
+    <div class="svc-col">
+      <div class="sc-head">
+        <div class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="sc-title">Identidades</div>
+      </div>
+      <ul>
+        <li>Altas en <b>Google Workspace</b> — externo e interno</li>
+        <li>Altas en <b>AD</b> — externo e interno</li>
+        <li>Alta <b>VPN</b> (en caso necesario) — externo e interno</li>
+        <li>Gestión de <b>contraseñas</b> y desbloqueo de cuentas</li>
+      </ul>
+    </div>
+
+    <!-- Aplicativos -->
+    <div class="svc-col">
+      <div class="sc-head">
+        <div class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+        <div class="sc-title">Aplicativos</div>
+      </div>
+      <ul>
+        <li>Configuración del <b>GID</b></li>
+        <li>Instalación y configuración del <b>DROP</b></li>
+        <li>Instalación y configuración <b>Aquacis CF</b></li>
+        <li>Instalación y configuración <b>Aquacis GA</b></li>
+        <li>Control y gestión de <b>licencias AutoCAD</b></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- USUARIOS -->
+<div class="panel" id="usuarios">
+  <div class="panel-head">
+    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+    <div class="panel-title">USUARIOS <span class="who">| Para quién</span></div>
+  </div>
+  <div class="usr-grid">
+    <div class="usr">
+      <div class="u-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>
+      <div class="u-title">+150 empleados</div>
+      <div class="u-sub">Grupo CASSA, mayoría en Sabadell</div>
+    </div>
+    <div class="usr">
+      <div class="u-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
+      <div class="u-title">2 EDAR</div>
+      <div class="u-sub">Riu Sec · Riu Ripoll</div>
+    </div>
+    <div class="usr">
+      <div class="u-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <div class="u-title">9 oficinas</div>
+      <div class="u-sub">Sabadell y 8 delegaciones</div>
+    </div>
+  </div>
+  <div class="usr-section-label">Oficinas</div>
+  <div class="office-tags">
+    <div class="office-tag primary">Sabadell</div>
+    <div class="office-tag">Milà Fontanals</div>
+    <div class="office-tag">Palau-solità i Plegamans</div>
+    <div class="office-tag">Sant Perpètua de Mogoda</div>
+    <div class="office-tag">Sant Feliu de Codines</div>
+    <div class="office-tag">Parets del Vallès</div>
+    <div class="office-tag">Lleida</div>
+    <div class="office-tag">Agramunt</div>
+    <div class="office-tag">Avinyonet</div>
+  </div>
+  <div class="foot-line">Soporte centralizado, un único responsable de referencia.</div>
+</div>
+
+<!-- CONECTOR VISUAL -->
+<div class="conn-row">
+  <span class="stub"></span>
+  <span class="stub"></span>
+  <span class="stub"></span>
+</div>
+
+<!-- CANALES -->
+<div class="panel" id="canales">
+    <div class="panel-head">
+      <div class="icon" style="background:var(--blue-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="panel-title">CANALES <span class="who">| Cómo entra la demanda</span></div>
+    </div>
+    <div class="ch-grid">
+      <div class="ch">
+        <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div class="c-title">Remedy</div>
+      </div>
+      <div class="ch">
+        <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg></div>
+        <div class="c-title">Email</div>
+      </div>
+      <div class="ch">
+        <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-9 8.35A8.5 8.5 0 1 1 20.9 8.15 8.38 8.38 0 0 1 21 11.5z"/></svg></div>
+        <div class="c-title">WhatsApp</div>
+      </div>
+      <div class="ch">
+        <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg></div>
+        <div class="c-title">Teléfono</div>
+      </div>
+      <div class="ch">
+        <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="c-title">Presencial</div>
+      </div>
+      <div class="ch">
+        <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="0.5" fill="var(--navy-2)"/><circle cx="12" cy="10" r="0.5" fill="var(--navy-2)"/><circle cx="15" cy="10" r="0.5" fill="var(--navy-2)"/></svg></div>
+        <div class="c-title">Chat de Google</div>
+      </div>
+    </div>
+    <div class="callout"><span class="star">★</span> Remedy es el canal de registro y seguimiento de todas las solicitudes.</div>
+  </div>
+
+<!-- PROPOSITO -->
+<div class="panel" id="proposito">
+  <div class="target"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+  <div class="p-title">PROPÓSITO DEL SERVICIO</div>
+  <div class="p-body">Garantizar que cada usuario del Grupo CASSA disponga de dispositivos, accesos, aplicaciones, conectividad y soporte operativo para trabajar con continuidad y seguridad.</div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#dce6fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+      <div class="f-label">Demanda</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#dce6fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+      <div class="f-label">Registro en Remedy</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#dce6fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+      <div class="f-label">Resolución</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#dce6fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
+      <div class="f-label">Escalado (si procede)</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#dce6fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div>
+      <div class="f-label">Cierre</div>
+    </div>
+  </div>
+  <div class="flow-note">Todo canal de entrada se registra y traza en Remedy.</div>
+</div>
+
+<!-- PROCESOS -->
+<div class="panel" id="procesos">
+  <div class="panel-head">
+    <div class="icon" style="background:var(--blue-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+    <div class="panel-title">PROCESOS <span class="who">| Cómo lo prestamos</span></div>
+  </div>
+  <div class="proc-grid">
+    <a class="proc proc-link" href="flujo-enrutamiento-solicitudes.html">
+      <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+      <div class="p-title">Solicitudes e incidencias</div>
+    </a>
+    <a class="proc proc-link" href="alta-identidades.html">
+      <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+      <div class="p-title">Altas / bajas de usuarios</div>
+    </a>
+    <a class="proc proc-link" href="ciclo-vida-dispositivo.html">
+      <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <div class="p-title">Gestión de dispositivos</div>
+    </a>
+    <div class="proc">
+      <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div class="p-title">Inventario (entradas / salidas)</div>
+    </div>
+    <div class="proc">
+      <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+      <div class="p-title">Soporte a aplicativos</div>
+    </div>
+    <div class="proc">
+      <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg></div>
+      <div class="p-title">Movilidad y redes móviles</div>
+    </div>
+  </div>
+  <div class="section-note">Estandarizar, priorizar, resolver, documentar en Remedy.</div>
+</div>
+
+<!-- HERRAMIENTAS -->
+<div class="panel" id="herramientas">
+  <div class="panel-head">
+    <div class="icon" style="background:var(--blue-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+    <div class="panel-title">HERRAMIENTAS <span class="who">| Con qué operamos</span></div>
+  </div>
+  <div class="tool-grid">
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+      <div>
+        <div class="t-title">Remedy</div>
+        <div class="t-desc">Gestión corporativa de tickets</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg></div>
+      <div>
+        <div class="t-title">Confluence</div>
+        <div class="t-desc">Manuales corporativos</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.35 8.95a1 1 0 0 1-.6-.01C8.5 20.5 5 18 5 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C15.51 3.79 18 5 20 5a1 1 0 0 1 1 1z"/></svg></div>
+      <div>
+        <div class="t-title">CrowdStrike</div>
+        <div class="t-desc">Antivirus corporativo y bloqueo de USB</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h6"/></svg></div>
+      <div>
+        <div class="t-title">SmartSheet</div>
+        <div class="t-desc">Gestión de proyectos y tareas</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 2-1.58l1.65-7.42H5.12"/></svg></div>
+      <div>
+        <div class="t-title">Ordinis</div>
+        <div class="t-desc">Compra de material</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg></div>
+      <div>
+        <div class="t-title">Portal Telefónica</div>
+        <div class="t-desc">Comunicación IT</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></div>
+      <div>
+        <div class="t-title">Intranet</div>
+        <div class="t-desc">Usuarios, gestión de dispositivos y calendario</div>
+      </div>
+    </div>
+    <div class="tool-card pending">
+      <div class="t-title">+ añadir si aplica</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROVEEDORES -->
+<div class="panel" id="proveedores">
+  <div class="panel-head">
+    <div class="icon" style="background:var(--purple-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg></div>
+    <div class="panel-title">PROVEEDORES <span class="who">| Con quién entregamos</span></div>
+  </div>
+  <div class="tool-grid">
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+      <div>
+        <div class="t-title">Synectic</div>
+        <div class="t-desc">Software corporativo para ordenadores, móviles y tablets, y soporte en ciertos temas</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.35 8.95a1 1 0 0 1-.6-.01C8.5 20.5 5 18 5 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C15.51 3.79 18 5 20 5a1 1 0 0 1 1 1z"/></svg></div>
+      <div>
+        <div class="t-title">Infraone</div>
+        <div class="t-desc">Red OT: accesos a firewall, gestión de dispositivos y soporte en CyberArk (membresías y accesos a SCADA)</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+      <div>
+        <div class="t-title">Entorno</div>
+        <div class="t-desc">Gestión del entorno web de la empresa</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+      <div>
+        <div class="t-title">Riello</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg></div>
+      <div>
+        <div class="t-title">Orange</div>
+        <div class="t-desc">Telefonía móvil y compra de material informático</div>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 2-1.58l1.65-7.42H5.12"/></svg></div>
+      <div>
+        <div class="t-title">Econocom</div>
+        <div class="t-desc">Telefonía móvil y compra de material informático</div>
+      </div>
+    </div>
+  </div>
+  <div class="section-note">Soporte especializado, hardware, telefonía y comunicaciones.</div>
+</div>
+
+<!-- TICKETS REMEDY -->
+<div class="panel" id="tickets">
+  <div class="panel-head">
+    <div class="icon" style="background:var(--blue-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg></div>
+    <div class="panel-title">TICKETS REMEDY <span class="who">| Volumen y estado</span></div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-tile">
+      <div class="k-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg></div>
+      <div>
+        <div class="k-value">2.000</div>
+        <div class="k-label">Tickets totales</div>
+      </div>
+    </div>
+    <div class="kpi-tile">
+      <div class="k-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+      <div>
+        <div class="k-value">9,8 / día</div>
+        <div class="k-label">Media en días laborables (L-V)</div>
+      </div>
+    </div>
+    <div class="kpi-tile">
+      <div class="k-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div>
+      <div>
+        <div class="k-value">94,9%</div>
+        <div class="k-label">Cerrados · 5,1% abiertos</div>
+      </div>
+    </div>
+  </div>
+  <div class="data-note">Datos del 28 nov 2025 al 9 sep 2026 · 204 días laborables</div>
+  <div class="btn-row">
+    <a class="btn-primary" href="estadisticas-remedy.html">
+      Ver estadísticas completas
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</div>
+
+<!-- KPIS -->
+<div class="panel" id="kpis">
+  <div class="panel-head">
+    <div class="icon" style="background:var(--blue-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-2.8-2.8L7 14"/></svg></div>
+    <div class="panel-title">KPIS <span class="who">| Cómo medimos el servicio</span></div>
+  </div>
+  <div class="kpi-status-grid">
+
+    <div class="kpi-status-card warn">
+      <div class="ks-top">
+        <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg></div>
+        <div class="ks-name">Volumen de tickets</div>
+      </div>
+      <div class="ks-badge">No medible aún</div>
+      <div class="ks-note">Se puede medir el volumen que entra por Remedy, pero hay que sumar las peticiones de los otros canales (WhatsApp, teléfono, email, presencial) para tener el dato completo.</div>
+    </div>
+
+    <div class="kpi-status-card warn">
+      <div class="ks-top">
+        <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+        <div class="ks-name">Tiempo de respuesta</div>
+      </div>
+      <div class="ks-badge">No medible aún</div>
+      <div class="ks-note">Requiere que la solicitud tenga hora de entrada registrada — hoy solo ocurre en la vía Remedy.</div>
+    </div>
+
+    <div class="kpi-status-card good">
+      <div class="ks-top">
+        <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg></div>
+        <div class="ks-name">Tiempo de resolución</div>
+      </div>
+      <div class="ks-badge">Medible hoy</div>
+      <div class="ks-note">Remedy ya registra la fecha de resolución (Resolved Date) junto a la de creación, así que se puede calcular el tiempo entre apertura y cierre de cada ticket.</div>
+    </div>
+
+    <div class="kpi-status-card warn">
+      <div class="ks-top">
+        <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></div>
+        <div class="ks-name">% SLA cumplido</div>
+      </div>
+      <div class="ks-badge">No medible aún</div>
+      <div class="ks-note">No hay un SLA formal definido todavía para ningún tipo de solicitud.</div>
+    </div>
+
+    <div class="kpi-status-card good">
+      <div class="ks-top">
+        <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div>
+        <div class="ks-name">% resolución en primer nivel</div>
+      </div>
+      <div class="ks-badge">Medible hoy</div>
+      <div class="ks-note">Remedy ya distingue si un ticket se queda en IT CASSA o se deriva a Corporativo.</div>
+    </div>
+
+    <div class="kpi-status-card warn">
+      <div class="ks-top">
+        <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+        <div class="ks-name">Satisfacción del usuario</div>
+      </div>
+      <div class="ks-badge">No medible aún</div>
+      <div class="ks-note">No hay encuesta ni valoración activada al cierre del ticket.</div>
+    </div>
+
+    <div class="kpi-status-card good">
+      <div class="ks-top">
+        <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div>
+        <div class="ks-name">Backlog / reabiertos</div>
+      </div>
+      <div class="ks-badge">Medible hoy</div>
+      <div class="ks-note">Remedy muestra los tickets abiertos acumulados y permite ver reaperturas.</div>
+    </div>
+
+  </div>
+  <div class="kpi-summary">3 de 7 KPIs son medibles hoy con Remedy. Los 4 restantes requieren que toda la demanda entre por Remedy y que se defina un SLA.</div>
+</div>
+
+</div>
+
+</body>
+</html>
