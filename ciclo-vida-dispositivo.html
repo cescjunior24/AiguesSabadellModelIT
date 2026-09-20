@@ -28,7 +28,8 @@
   }
   .page{
     position:relative;
-    width:1560px;
+    width:100%;
+    max-width:1560px;
     margin:0 auto;
     padding:30px 40px 36px;
   }
@@ -98,7 +99,7 @@
   .placeholder{
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:10px;
-    width:1560px;
+    width:100%;
     height:420px;
     border:1.5px dashed var(--line);
     border-radius:16px;
@@ -118,6 +119,27 @@
     height:840px;
   }
   .canvas > svg{ position:absolute; top:0; left:0; overflow:visible; }
+
+
+  /* ===== FLUJO LINEAL ===== */
+  .steps{max-width:720px;margin:0 auto;list-style:none;padding:0;}
+  .step{position:relative;display:flex;gap:18px;padding-bottom:22px;}
+  .step:last-child{padding-bottom:0;}
+  .step::before{content:"";position:absolute;left:19px;top:44px;bottom:2px;width:2px;background:#a9b7d1;}
+  .step:last-child::before{display:none;}
+  .step .num{flex:none;width:40px;height:40px;border-radius:50%;background:var(--card);border:2px solid var(--blue);color:var(--blue);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;z-index:1;}
+  .step.first .num{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .step.last .num{background:var(--blue);color:#fff;}
+  .step .card{flex:1;min-width:0;background:var(--card);border:1.5px solid var(--line);border-radius:14px;box-shadow:0 1px 3px rgba(15,25,50,.05);padding:14px 18px;}
+  .step.first .card{background:linear-gradient(160deg,var(--navy),#0f1930);border-color:transparent;}
+  .step.last .card{border-left:4px solid var(--blue);}
+  .step .t{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;line-height:1.25;color:var(--ink);}
+  .step .sub{font-size:11.5px;font-weight:600;color:var(--blue);margin-top:2px;}
+  .step .d{font-size:13px;line-height:1.5;color:var(--mut);margin-top:6px;}
+  .step .opts{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.5;color:var(--mut);}
+  .step .opts li+li{margin-top:4px;}
+  .step .opts b{color:var(--ink);}
+  .step.first .t{color:#fff;} .step.first .sub{color:#cfe0ff;} .step.first .d{color:#cfd8ea;}
 
   /* ===== NODOS ===== */
   .node{
@@ -219,188 +241,101 @@
   </div>
 
   <div class="tab-panel active" id="panel-ordenadores">
-  <div class="canvas">
-
-    <svg width="1560" height="840">
-      <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" fill="var(--edge)"/>
-        </marker>
-      </defs>
-
-      <!-- entradas -> se maqueta -->
-      <path d="M570,70 Q 660,105 795,168" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M1030,70 Q 940,105 805,168" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-
-      <!-- anillo principal (sentido horario) -->
-      <path d="M800,170 Q 1129,173 1333,378" fill="none" stroke="var(--edge)" stroke-width="2.6" marker-end="url(#arrow)"/>
-      <path d="M1333,378 Q 1363,597 1129,747" fill="none" stroke="var(--edge)" stroke-width="2.6" marker-end="url(#arrow)"/>
-      <path d="M1129,747 Q 800,860 471,747" fill="none" stroke="var(--edge)" stroke-width="2.6" marker-end="url(#arrow)"/>
-      <path d="M471,747 Q 137,597 267,378" fill="none" stroke="var(--edge)" stroke-width="2.6" marker-end="url(#arrow)"/>
-
-      <!-- retorno: olvido -> dispositivo reutilizado -->
-      <path d="M267,378 C 90,300 90,90 460,60" fill="none" stroke="var(--blue)" stroke-width="2.6" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
-    </svg>
-
-    <!-- ===== ENTRADAS ===== -->
-    <div class="node node-entry" style="left:570px; top:60px; width:220px; height:74px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></div>
-      <div class="n-body"><div class="n-title">Dispositivo reutilizado</div></div>
-    </div>
-
-    <div class="node node-entry" style="left:1030px; top:60px; width:210px; height:74px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
-      <div class="n-body"><div class="n-title">Dispositivo nuevo</div></div>
-    </div>
-
-    <!-- ===== ANILLO PRINCIPAL ===== -->
-    <div class="node" style="left:800px; top:170px; width:280px; height:92px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
-      <div class="n-body">
-        <div class="n-title">Se maqueta</div>
-        <div class="n-sub">Arranque por pendrive e instalación del software corporativo</div>
-      </div>
-    </div>
-
-    <div class="node" style="left:1333px; top:378px; width:290px; height:92px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
-      <div class="n-body">
-        <div class="n-title">Se pone en dominio</div>
-        <div class="n-sub">Y se asigna a un usuario</div>
-      </div>
-    </div>
-
-    <div class="node" style="left:1129px; top:747px; width:270px; height:92px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>
-      <div class="n-body">
-        <div class="n-title">Usuario con el dispositivo</div>
-        <div class="n-sub">En uso operativo</div>
-      </div>
-    </div>
-
-    <div class="node" style="left:471px; top:747px; width:280px; height:92px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
-      <div class="n-body">
-        <div class="n-title">Se da de baja en AD</div>
-      </div>
-    </div>
-
-    <div class="node" style="left:267px; top:378px; width:290px; height:104px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div>
-      <div class="n-body">
-        <div class="n-title">Se pasa por el Olvido</div>
-        <div class="n-sub">Restauración y borrado. Se registra en un Sheets con el dispositivo y el usuario</div>
-      </div>
-    </div>
-
-    <div class="loop-label" style="left:130px; top:190px;">Reentra al ciclo</div>
-
-  </div>
+    <ol class="steps">
+      <li class="step first">
+        <div class="num">1</div>
+        <div class="card">
+          <div class="t">Dispositivo nuevo o reutilizado</div>
+          
+          <div class="d">Punto de entrada al ciclo: un equipo nuevo o un equipo reutilizado que vuelve tras pasar por el Olvido.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="num">2</div>
+        <div class="card">
+          <div class="t">Se maqueta</div>
+          <div class="sub">Arranque por pendrive</div>
+          <div class="d">Se arranca por pendrive y se instala el software corporativo.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="num">3</div>
+        <div class="card">
+          <div class="t">Se pone en dominio</div>
+          <div class="sub">Asignación a un usuario</div>
+          <div class="d">Se pone el equipo en dominio y se asigna a un usuario.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="num">4</div>
+        <div class="card">
+          <div class="t">Usuario con el dispositivo</div>
+          <div class="sub">En uso operativo</div>
+          <div class="d">El usuario trabaja con el dispositivo en su día a día.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="num">5</div>
+        <div class="card">
+          <div class="t">Se da de baja en AD</div>
+          
+          <div class="d">Al finalizar el uso, se da de baja el equipo en Active Directory.</div>
+        </div>
+      </li>
+      <li class="step last">
+        <div class="num">6</div>
+        <div class="card">
+          <div class="t">Se pasa por el Olvido</div>
+          <div class="sub">Restauración y borrado</div>
+          <div class="d">Se restaura y se borra el dispositivo, y se registra en un Sheets con el dispositivo y el usuario. Después reentra al ciclo como dispositivo reutilizado.</div>
+        </div>
+      </li>
+    </ol>
   </div>
 
   <div class="tab-panel" id="panel-moviles">
-  <div class="canvas" style="height:900px;">
-
-    <svg width="1560" height="900">
-      <defs>
-        <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" fill="var(--edge)"/>
-        </marker>
-      </defs>
-
-      <!-- entradas cruzadas -> rutas -->
-      <path d="M560,90 Q 470,130 380,175" fill="none" stroke="var(--edge)" stroke-width="2.2" marker-end="url(#arrow2)"/>
-      <path d="M560,90 Q 870,120 1180,175" fill="none" stroke="var(--edge)" stroke-width="2.2" marker-end="url(#arrow2)"/>
-      <path d="M1000,90 Q 690,120 380,175" fill="none" stroke="var(--edge)" stroke-width="2.2" marker-end="url(#arrow2)"/>
-      <path d="M1000,90 Q 1090,130 1180,175" fill="none" stroke="var(--edge)" stroke-width="2.2" marker-end="url(#arrow2)"/>
-
-      <!-- ruta A interna -->
-      <path d="M380,255 L380,287" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow2)"/>
-
-      <!-- ruta B interna -->
-      <path d="M1180,255 L1180,287" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow2)"/>
-
-      <!-- confluencia -->
-      <path d="M380,383 Q 500,470 700,550" fill="none" stroke="var(--blue)" stroke-width="2.4" marker-end="url(#arrow2)"/>
-      <path d="M1180,383 Q 1060,470 860,550" fill="none" stroke="var(--blue)" stroke-width="2.4" marker-end="url(#arrow2)"/>
-
-      <!-- tronco final -->
-      <path d="M780,640 L780,665" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow2)"/>
-      <path d="M780,745 L780,767" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow2)"/>
-
-      <!-- retorno: restauracion -> movil restaurado -->
-      <path d="M780,863 C 1300,895 1470,650 1470,380 C 1470,150 1210,80 1035,60" fill="none" stroke="var(--blue)" stroke-width="2.6" stroke-dasharray="7 6" marker-end="url(#arrow2)"/>
-    </svg>
-
-    <!-- ===== ENTRADAS ===== -->
-    <div class="node node-entry" style="left:560px; top:55px; width:220px; height:70px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
-      <div class="n-body"><div class="n-title">Móvil nuevo</div></div>
-    </div>
-
-    <div class="node node-entry" style="left:1000px; top:55px; width:220px; height:70px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></div>
-      <div class="n-body"><div class="n-title">Móvil restaurado</div></div>
-    </div>
-
-    <!-- ===== RUTA A ===== -->
-    <div class="route-chip" style="left:380px; top:140px; height:32px;">RUTA A · MDM DE GOOGLE</div>
-
-    <div class="node" style="left:380px; top:215px; width:270px; height:90px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.35 8.95a1 1 0 0 1-.6-.01C8.5 20.5 5 18 5 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C15.51 3.79 18 5 20 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></div>
-      <div class="n-body">
-        <div class="n-title">MDM de Google</div>
-        <div class="n-sub">Uso de credenciales del correo corporativo</div>
-      </div>
-    </div>
-
-    <div class="node" style="left:380px; top:335px; width:290px; height:96px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-      <div class="n-body">
-        <div class="n-title">Petición al portal CAU</div>
-        <div class="n-sub">Registro del teléfono en MDM</div>
-      </div>
-    </div>
-
-    <!-- ===== RUTA B ===== -->
-    <div class="route-chip" style="left:1180px; top:140px; height:32px;">RUTA B · AIRWATCH</div>
-
-    <div class="node" style="left:1180px; top:215px; width:220px; height:80px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.35 8.95a1 1 0 0 1-.6-.01C8.5 20.5 5 18 5 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C15.51 3.79 18 5 20 5a1 1 0 0 1 1 1z"/></svg></div>
-      <div class="n-body"><div class="n-title">Airwatch</div></div>
-    </div>
-
-    <div class="node" style="left:1180px; top:335px; width:290px; height:96px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
-      <div class="n-body">
-        <div class="n-title">GPO para enrolar en Airwatch</div>
-        <div class="n-sub">Uso de contraseña en AD</div>
-      </div>
-    </div>
-
-    <!-- ===== CONFLUENCIA ===== -->
-    <div class="node node-confluence" style="left:780px; top:595px; width:340px; height:90px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
-      <div class="n-body"><div class="n-title">Instalación de aplicativos necesarios</div></div>
-    </div>
-
-    <!-- ===== TRONCO FINAL ===== -->
-    <div class="node" style="left:780px; top:705px; width:260px; height:80px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
-      <div class="n-body"><div class="n-title">Finalización de uso</div></div>
-    </div>
-
-    <div class="node" style="left:780px; top:815px; width:300px; height:96px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div>
-      <div class="n-body">
-        <div class="n-title">Restauración de dispositivo</div>
-        <div class="n-sub">Antes de reincorporarse al ciclo</div>
-      </div>
-    </div>
-
-    <div class="loop-label" style="left:1300px; top:110px;">Reentra al ciclo</div>
-
-  </div>
+    <ol class="steps">
+      <li class="step first">
+        <div class="num">1</div>
+        <div class="card">
+          <div class="t">Móvil nuevo o restaurado</div>
+          
+          <div class="d">Punto de entrada al ciclo: un móvil nuevo o un móvil restaurado que vuelve tras su uso.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="num">2</div>
+        <div class="card">
+          <div class="t">Enrolamiento en MDM</div>
+          <div class="sub">MDM de Google o Airwatch</div>
+          <div class="d">El móvil se enrola en la plataforma de gestión que corresponda:</div><ul class="opts"><li><b>MDM de Google:</b> se usan las credenciales del correo corporativo y se hace una petición al portal CAU para registrar el teléfono en MDM.</li><li><b>Airwatch:</b> se usa una GPO para enrolar en Airwatch, con la contraseña de AD.</li></ul>
+        </div>
+      </li>
+      <li class="step">
+        <div class="num">3</div>
+        <div class="card">
+          <div class="t">Instalación de aplicativos necesarios</div>
+          
+          <div class="d">Se instalan en el móvil los aplicativos necesarios para el usuario.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="num">4</div>
+        <div class="card">
+          <div class="t">Finalización de uso</div>
+          
+          <div class="d">El usuario deja de utilizar el móvil.</div>
+        </div>
+      </li>
+      <li class="step last">
+        <div class="num">5</div>
+        <div class="card">
+          <div class="t">Restauración de dispositivo</div>
+          <div class="sub">Antes de reincorporarse al ciclo</div>
+          <div class="d">Se restaura el dispositivo. Después reentra al ciclo como móvil restaurado.</div>
+        </div>
+      </li>
+    </ol>
   </div>
 
   <div class="tab-panel" id="panel-ipads">

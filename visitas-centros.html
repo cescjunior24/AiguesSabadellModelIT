@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visitas a Centros · Usuarios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16233f;
+    --navy-2:#1d3157;
+    --blue:#2f5fa8;
+    --blue-soft:#eaf0fa;
+    --purple:#6a3f9e;
+    --purple-soft:#f1e9fa;
+    --ink:#1b2433;
+    --mut:#5b6778;
+    --line:#d7dee9;
+    --bg:#f4f6fa;
+    --card:#ffffff;
+    --edge:#a9b7d1;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--bg);
+    font-family:'IBM Plex Sans', sans-serif;
+    color:var(--ink);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  .topbar{
+    display:flex; align-items:center; gap:16px;
+    padding:16px 28px;
+    border-bottom:1px solid var(--line);
+    background:var(--card);
+    flex:none;
+  }
+  .back-link{
+    display:flex; align-items:center; gap:6px;
+    font-size:13px; font-weight:600;
+    color:var(--navy-2);
+    text-decoration:none;
+    padding:7px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    flex:none;
+    transition:border-color .15s, background .15s;
+  }
+  .back-link:hover{ border-color:var(--blue); background:var(--blue-soft); }
+  .back-link svg{ width:15px; height:15px; stroke:currentColor; }
+  header{ text-align:center; flex:1; min-width:0; }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:21px; font-weight:700;
+    margin:0 0 2px; color:var(--navy);
+    letter-spacing:-0.01em;
+  }
+  h1 .sep{ color:#9aa6bb; font-weight:500; margin:0 8px; }
+  .subtitle{ font-size:12.5px; color:var(--mut); margin:0; }
+  .topbar-spacer{ width:126px; flex:none; }
+
+  .viewport{ flex:1; min-height:0; overflow:auto; padding:28px 24px 48px; }
+  .wrap{ max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
+  .cols{ display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+
+  .panel{
+    background:var(--card);
+    border:1.5px solid var(--line);
+    border-radius:14px;
+    padding:18px 20px 20px;
+  }
+  .panel-head{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .icon{
+    width:34px; height:34px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    flex:none; background:var(--blue-soft);
+  }
+  .icon svg{ width:18px; height:18px; stroke:var(--blue); }
+  .panel-title{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:15.5px; font-weight:600; color:var(--navy);
+  }
+  .panel-title .who{ font-weight:400; color:var(--mut); font-size:13px; }
+
+  /* ===== PRÓXIMA VISITA ===== */
+  .next{
+    background:linear-gradient(160deg,var(--navy),#0f1930);
+    color:#fff;
+    border-radius:14px;
+    padding:20px 24px;
+  }
+  .next .k{
+    font-size:11px; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; color:#cfe0ff;
+  }
+  .next .c{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:26px; font-weight:700; margin:6px 0 2px;
+  }
+  .next .d{ font-size:13px; color:#dce6fb; }
+  .next .km{
+    display:inline-block; margin-top:10px;
+    background:rgba(255,255,255,.1); border-radius:8px;
+    padding:5px 11px; font-size:12px; color:#eef2fa;
+  }
+  .stack{ display:flex; flex-direction:column; gap:18px; }
+
+  /* ===== LISTA DE MARTES ===== */
+  .list{ margin:0 -20px -20px; padding:0; list-style:none; overflow:hidden; border-radius:0 0 12px 12px; }
+  .month{
+    background:#f8f9fc; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:6px 20px; font-size:10.5px; font-weight:600; color:var(--mut);
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  .month:first-child{ border-top:0; }
+  .row{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 20px; border-bottom:1px solid #edf0f5; font-size:13px;
+  }
+  .row .n{
+    flex:none; width:22px; height:22px; border-radius:50%;
+    background:var(--blue); color:#fff;
+    font-family:'Space Grotesk', sans-serif; font-size:11px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .row .date{ flex:1; color:var(--mut); }
+  .row .name{ font-family:'Space Grotesk', sans-serif; font-weight:600; color:var(--ink); }
+  .row.past .n{ background:#b7c1d4; }
+  .row.past .date, .row.past .name{ color:#9aa6bb; }
+
+  /* ===== MAPA ===== */
+  .map svg{ display:block; width:100%; height:auto; }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:16px; margin-top:10px;
+    font-size:11.5px; color:var(--mut); align-items:center;
+  }
+  .legend .dot{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:16px; height:16px; border-radius:50%;
+    background:var(--blue); color:#fff; font-size:9px; font-weight:700; margin-right:6px;
+  }
+  .legend .sq{
+    display:inline-block; width:14px; height:14px; border-radius:4px;
+    background:var(--purple); margin-right:6px; vertical-align:-3px;
+  }
+  .note{ font-size:11px; color:var(--mut); margin-top:8px; }
+
+  /* ===== TABLA ===== */
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{
+    text-align:left; font-size:10.5px; font-weight:600; color:var(--mut);
+    text-transform:uppercase; letter-spacing:.04em;
+    padding:0 12px 8px; border-bottom:1px solid var(--line);
+  }
+  td{ padding:10px 12px; border-bottom:1px solid #edf0f5; }
+  tr:last-child td{ border-bottom:0; }
+  th.r, td.r{ text-align:right; }
+  td .n{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:20px; height:20px; border-radius:50%; margin-right:9px;
+    background:var(--blue); color:#fff; font-size:10.5px; font-weight:700;
+    font-family:'Space Grotesk', sans-serif;
+  }
+  td .cn{ font-family:'Space Grotesk', sans-serif; font-weight:600; }
+  td.when{ color:var(--mut); }
+  .tag{
+    display:inline-block; margin-left:8px;
+    background:var(--blue-soft); color:var(--navy-2);
+    font-size:11px; font-weight:600; padding:2px 9px; border-radius:999px;
+  }
+  .table-wrap{ overflow-x:auto; }
+
+
+  /* ===== INTERACCIÓN ===== */
+  .row, tbody tr{ cursor:pointer; transition:background .15s; }
+  .row:hover, tbody tr:hover{ background:#f5f8fd; }
+  .row:focus-visible, tbody tr:focus-visible{ outline:2px solid var(--blue); outline-offset:-2px; }
+  .row.sel, tbody tr.sel{ background:var(--blue-soft); box-shadow:inset 3px 0 0 var(--blue); }
+  .row.sel .date{ color:var(--navy-2); font-weight:500; }
+  .row .tag{ margin-left:0; margin-right:10px; }
+  .map-panel{ position:sticky; top:0; }
+  .seg{
+    margin-left:auto; display:flex; gap:2px; padding:3px;
+    background:var(--bg); border:1px solid var(--line); border-radius:9px;
+  }
+  .seg button{
+    font-family:'IBM Plex Sans', sans-serif; font-size:11.5px; font-weight:600;
+    color:var(--mut); background:transparent; border:0; border-radius:7px;
+    padding:5px 11px; cursor:pointer;
+  }
+  .seg button:hover{ color:var(--navy-2); }
+  .seg button.on{ background:var(--navy); color:#fff; }
+  .hit{ cursor:pointer; }
+  .hit:hover .base{ stroke:var(--blue); }
+  .fade{ animation:fade .35s ease; }
+  @keyframes fade{ from{ opacity:0; } to{ opacity:1; } }
+  .selbar{
+    margin-top:12px; padding:9px 12px; border-radius:9px;
+    background:var(--blue-soft); color:var(--navy-2);
+    font-size:12.5px; line-height:1.4; min-height:38px;
+  }
+  .selbar b{ font-family:'Space Grotesk', sans-serif; }
+
+  @media (max-width:900px){
+    .cols{ grid-template-columns:1fr; }
+    .topbar{ padding:12px 14px; }
+    .topbar-spacer{ display:none; }
+    h1{ font-size:17px; }
+    .viewport{ padding:18px 16px 40px; }
+    .map-panel{ position:static; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back-link" href="modelo-prestacion-servicio-it.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Volver al modelo
+  </a>
+  <header>
+    <h1>Visitas a Centros<span class="sep">|</span>Usuarios</h1>
+    <p class="subtitle">Un centro cada martes, en rotación, desde octubre.</p>
+  </header>
+  <div class="topbar-spacer"></div>
+</div>
+
+<div class="viewport">
+  <div class="wrap">
+
+    <div class="cols">
+      <div class="stack">
+        <div class="next" id="next"></div>
+        <div class="panel">
+          <div class="panel-head">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+            <div class="panel-title">CALENDARIO <span class="who">| Martes de visita</span></div>
+          </div>
+          <ul class="list" id="list"></ul>
+        </div>
+      </div>
+
+      <div class="panel map map-panel">
+        <div class="panel-head">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="panel-title">MAPA <span class="who">| Distancia desde Sabadell</span></div>
+          <div class="seg" id="seg">
+            <button type="button" data-view="cat" class="on">Cataluña</button>
+            <button type="button" data-view="zone">Zona Sabadell</button>
+          </div>
+        </div>
+        <div id="map"></div>
+        <div class="selbar" id="selbar"></div>
+        <div class="legend">
+          <span><span class="dot">1</span>Centro (orden de rotación)</span>
+          <span><span class="sq"></span>Sabadell (base)</span>
+        </div>
+        <p class="note">Mapa esquemático, no a escala. Los km son una estimación por carretera desde Sabadell, no datos oficiales.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
+        <div class="panel-title">RESUMEN <span class="who">| Por centro</span></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Centro</th><th class="r">Distancia desde Sabadell</th><th>Próxima visita</th></tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  // El orden de esta lista es el orden de rotación. Coordenadas y km: estimaciones.
+  var SABADELL = { lon: 2.109, lat: 41.543 };
+  var CENTROS = [
+    { id:'santa-perpetua',  name:'Santa Perpètua',  lon:2.180, lat:41.537, km:9,   valles:true,  kind:'Oficina' },
+    { id:'lleida',          name:'Lleida',          lon:0.620, lat:41.617, km:155, valles:false, kind:'Oficina' },
+    { id:'avinyonet',       name:'Avinyonet',       lon:1.816, lat:41.400, km:55,  valles:false, kind:'Oficina' },
+    { id:'edar-riu-sec',    name:'EDAR Riu Sec',    lon:2.100, lat:41.508, km:5,   valles:true,  kind:'EDAR' },
+    { id:'edar-riu-ripoll', name:'EDAR Riu Ripoll', lon:2.135, lat:41.520, km:6,   valles:true,  kind:'EDAR' }
+  ];
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  /* ---------- Calendario ---------- */
+  var todayKey = new Intl.DateTimeFormat('en-CA', { timeZone:'Europe/Madrid' }).format(new Date());
+  var year = Number(todayKey.slice(0,4));
+
+  var visitas = [];
+  var d = new Date(Date.UTC(year, 9, 1));
+  while (d.getUTCDay() !== 2) d.setUTCDate(d.getUTCDate() + 1);
+  for (var i = 0; d.getUTCFullYear() === year; i++) {
+    visitas.push({ key:d.toISOString().slice(0,10), date:new Date(d), idx:i % CENTROS.length });
+    d.setUTCDate(d.getUTCDate() + 7);
+  }
+  var next = null;
+  for (var j = 0; j < visitas.length; j++) { if (visitas[j].key >= todayKey) { next = visitas[j]; break; } }
+  var nextByCentro = {};
+  visitas.forEach(function(v){ if (v.key >= todayKey && !nextByCentro[v.idx]) nextByCentro[v.idx] = v; });
+
+  function fmt(date, opts){ opts.timeZone = 'UTC'; return date.toLocaleDateString('es-ES', opts); }
+  function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  /* ---------- Estado ---------- */
+  var state = { view:'cat', sel: next ? next.idx : null };
+  var lastView = null;
+
+  function select(idx){
+    state.sel = idx;
+    state.view = CENTROS[idx].valles ? 'zone' : 'cat';
+    render();
+  }
+  function setView(v){ state.view = v; render(); }
+
+  /* ---------- Bloques de texto ---------- */
+  var nextEl = document.getElementById('next');
+  if (next) {
+    var nc = CENTROS[next.idx];
+    nextEl.innerHTML =
+      '<div class="k">Próxima visita</div>' +
+      '<div class="c">' + nc.name + '</div>' +
+      '<div class="d">' + cap(fmt(next.date, { weekday:'long', day:'numeric', month:'long', year:'numeric' })) + '</div>' +
+      '<span class="km">' + nc.km + ' km desde Sabadell</span>';
+  } else {
+    nextEl.innerHTML = '<div class="k">Próxima visita</div><div class="d" style="margin-top:6px">No quedan visitas programadas este año.</div>';
+  }
+
+  function renderList(){
+    var html = '', lastMonth = '';
+    visitas.forEach(function(v){
+      var month = cap(fmt(v.date, { month:'long', year:'numeric' }));
+      if (month !== lastMonth) { html += '<li class="month">' + month + '</li>'; lastMonth = month; }
+      var cls = 'row' + (!next || v.key < next.key ? ' past' : '') + (state.sel === v.idx ? ' sel' : '');
+      html += '<li class="' + cls + '" data-idx="' + v.idx + '" role="button" tabindex="0" aria-pressed="' + (state.sel === v.idx) + '">' +
+        '<span class="n">' + (v.idx + 1) + '</span>' +
+        '<span class="date">' + cap(fmt(v.date, { weekday:'long', day:'numeric', month:'short' })) + '</span>' +
+        (next && v.key === next.key ? '<span class="tag">Próxima</span>' : '') +
+        '<span class="name">' + CENTROS[v.idx].name + '</span></li>';
+    });
+    document.getElementById('list').innerHTML = html;
+  }
+
+  function renderTable(){
+    document.getElementById('tbody').innerHTML = CENTROS.map(function(c, i){
+      var v = nextByCentro[i];
+      var when = v ? cap(fmt(v.date, { weekday:'long', day:'numeric', month:'long' })) : '—';
+      var tag = v && next && v.key === next.key ? '<span class="tag">Próxima</span>' : '';
+      return '<tr class="' + (state.sel === i ? 'sel' : '') + '" data-idx="' + i + '" tabindex="0">' +
+        '<td><span class="n">' + (i + 1) + '</span><span class="cn">' + c.name + '</span></td>' +
+        '<td class="r">~' + c.km + ' km</td><td class="when">' + when + tag + '</td></tr>';
+    }).join('');
+  }
+
+  function renderSelBar(){
+    var el = document.getElementById('selbar');
+    if (state.sel === null) { el.innerHTML = 'Pulsa un centro en el calendario, la tabla o el mapa.'; return; }
+    var c = CENTROS[state.sel], v = nextByCentro[state.sel];
+    el.innerHTML = '<b>' + c.name + '</b> · ' + c.kind + ' · ~' + c.km + ' km desde Sabadell' +
+      (v ? '<br>Próxima visita: ' + cap(fmt(v.date, { weekday:'long', day:'numeric', month:'long' })) : '');
+  }
+
+  /* ---------- Animaciones SVG ---------- */
+  var BLUE = 'var(--blue)', PURPLE = 'var(--purple)';
+
+  // Tres puntos que viajan por la ruta, desfasados.
+  function pulses(pathId, dur){
+    if (reduce) return '';
+    var out = '';
+    for (var k = 0; k < 3; k++) {
+      var b = (k * dur / 3).toFixed(2) + 's';
+      out += '<circle r="5" fill="' + BLUE + '" stroke="#fff" stroke-width="1.5" opacity="0">' +
+        '<animateMotion dur="' + dur + 's" begin="' + b + '" repeatCount="indefinite" calcMode="linear"><mpath href="#' + pathId + '"/></animateMotion>' +
+        '<animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.12;.85;1" dur="' + dur + 's" begin="' + b + '" repeatCount="indefinite"/></circle>';
+    }
+    return out;
+  }
+  // Ondas que se expanden desde un punto.
+  function rings(x, y, r0, dur){
+    if (reduce) return '';
+    var out = '';
+    for (var k = 0; k < 2; k++) {
+      var b = (k * dur / 2).toFixed(2) + 's';
+      out += '<circle cx="' + x + '" cy="' + y + '" r="' + r0 + '" fill="none" stroke="' + BLUE + '" stroke-width="2" opacity="0">' +
+        '<animate attributeName="r" from="' + r0 + '" to="' + (r0 + 22) + '" dur="' + dur + 's" begin="' + b + '" repeatCount="indefinite"/>' +
+        '<animate attributeName="opacity" from=".7" to="0" dur="' + dur + 's" begin="' + b + '" repeatCount="indefinite"/></circle>';
+    }
+    return out;
+  }
+  // Línea de la ruta seleccionada con el guion "fluyendo".
+  function flowLine(pathId, d){
+    return '<path id="' + pathId + '" d="' + d + '" fill="none" stroke="' + BLUE + '" stroke-width="2.5" stroke-dasharray="6 6" stroke-linecap="round">' +
+      (reduce ? '' : '<animate attributeName="stroke-dashoffset" from="24" to="0" dur=".9s" repeatCount="indefinite"/>') + '</path>';
+  }
+
+  function badge(x, y, n, isSel){
+    return '<circle cx="' + x + '" cy="' + y + '" r="9" fill="' + BLUE + '" stroke="#fff" stroke-width="2"/>' +
+      '<text x="' + x + '" y="' + y + '" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="700" fill="#fff" font-family="Space Grotesk">' + n + '</text>';
+  }
+  function marker(x, y, n, r, isSel, title){
+    return '<title>' + title + '</title>' +
+      (isSel ? '<circle cx="' + x + '" cy="' + y + '" r="' + (r+5) + '" fill="none" stroke="' + BLUE + '" stroke-opacity=".35" stroke-width="2"/>' : '') +
+      '<circle class="base" cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + BLUE + '" stroke="#fff" stroke-width="2"/>' +
+      '<text x="' + x + '" y="' + y + '" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="700" fill="#fff" font-family="Space Grotesk">' + n + '</text>';
+  }
+  function home(x, y, r){
+    return '<title>Sabadell (base)</title>' +
+      '<rect x="' + (x-r) + '" y="' + (y-r) + '" width="' + (r*2) + '" height="' + (r*2) + '" rx="' + (r*.5) + '" fill="' + PURPLE + '" stroke="#fff" stroke-width="2"/>' +
+      '<path d="M' + (x-r*.55) + ',' + (y+r*.05) + ' L' + x + ',' + (y-r*.5) + ' L' + (x+r*.55) + ',' + (y+r*.05) +
+      ' M' + (x-r*.35) + ',' + (y-r*.05) + ' V' + (y+r*.5) + ' H' + (x+r*.35) + ' V' + (y-r*.05) +
+      '" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  function pill(x, y, text){
+    var w = text.length * 5.4 + 10;
+    return '<rect x="' + (x-w/2) + '" y="' + (y-8) + '" width="' + w + '" height="16" rx="8" fill="#fff" stroke="var(--line)"/>' +
+      '<text x="' + x + '" y="' + y + '" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="500" fill="var(--ink)">' + text + '</text>';
+  }
+
+  /* ---------- Vista Cataluña ---------- */
+  var OUTLINE = [
+    [0.66,42.70],[0.72,42.80],[0.85,42.86],[1.00,42.80],[1.16,42.72],[1.35,42.72],[1.44,42.60],
+    [1.44,42.44],[1.72,42.44],[1.73,42.50],[1.98,42.46],[2.18,42.42],[2.40,42.36],[2.68,42.40],
+    [2.92,42.46],[3.16,42.43],[3.32,42.32],[3.20,42.22],[3.16,42.12],[3.22,41.95],[3.13,41.85],
+    [3.03,41.77],[2.80,41.67],[2.50,41.57],[2.19,41.38],[1.97,41.27],[1.72,41.22],[1.45,41.15],
+    [1.25,41.10],[1.05,41.05],[0.85,40.92],[0.87,40.73],[0.70,40.62],[0.52,40.58],[0.30,40.52],
+    [0.16,40.60],[0.25,40.80],[0.30,41.00],[0.32,41.20],[0.38,41.40],[0.40,41.62],[0.55,41.85],
+    [0.70,42.05],[0.60,42.25],[0.68,42.45]
+  ];
+  var SIZE = 500;
+  function proj(lon, lat){ return [ (lon - 0.16) / 3.16 * SIZE, (42.86 - lat) / 2.34 * SIZE ]; }
+  function smoothClosed(pts){
+    var n = pts.length;
+    function mid(a, b){ return [(a[0]+b[0])/2, (a[1]+b[1])/2]; }
+    var s0 = mid(pts[n-1], pts[0]);
+    var p = 'M' + s0[0].toFixed(1) + ',' + s0[1].toFixed(1);
+    for (var k = 0; k < n; k++) {
+      var c = pts[k], m = mid(c, pts[(k+1) % n]);
+      p += ' Q' + c[0].toFixed(1) + ',' + c[1].toFixed(1) + ' ' + m[0].toFixed(1) + ',' + m[1].toFixed(1);
+    }
+    return p + 'Z';
+  }
+  function curve(a, b){
+    var mx = (a[0]+b[0])/2, my = (a[1]+b[1])/2, dx = b[0]-a[0], dy = b[1]-a[1];
+    var len = Math.sqrt(dx*dx + dy*dy) || 1;
+    return 'M' + a[0].toFixed(1) + ',' + a[1].toFixed(1) + ' Q' + (mx - dy/len*len*.12).toFixed(1) + ',' + (my + dx/len*len*.12).toFixed(1) + ' ' + b[0].toFixed(1) + ',' + b[1].toFixed(1);
+  }
+
+  function catView(){
+    var sp = proj(SABADELL.lon, SABADELL.lat);
+    var sel = state.sel === null ? null : CENTROS[state.sel];
+    var g = '<path d="' + smoothClosed(OUTLINE.map(function(p){ return proj(p[0], p[1]); })) + '" fill="#e8edf6" stroke="var(--edge)" stroke-width="1.5" stroke-linejoin="round"/>';
+    g += '<text x="200" y="40" font-size="10" font-weight="500" letter-spacing="2" fill="#9aa6bb">FRANÇA</text>';
+    g += '<text x="365" y="322" font-size="10" font-style="italic" fill="#9aa6bb">Mar Mediterrània</text>';
+
+    var far = [];
+    CENTROS.forEach(function(c, i){ if (!c.valles) far.push(i); });
+
+    // rutas de fondo
+    far.forEach(function(i){
+      if (i === state.sel) return;
+      var p = proj(CENTROS[i].lon, CENTROS[i].lat);
+      g += '<path d="' + curve(sp, p) + '" fill="none" stroke="#8b98b8" stroke-width="1.2" stroke-dasharray="4 4"/>';
+    });
+
+    // Sabadell: anillo, insignia y acceso a la zona
+    g += '<g class="hit" data-sab="1"><circle class="base" cx="' + sp[0] + '" cy="' + sp[1] + '" r="15" fill="rgba(255,255,255,.6)" stroke="#8b98b8" stroke-dasharray="3 3"/></g>';
+    var selValles = sel && sel.valles;
+    if (selValles) g += rings(sp[0], sp[1], 15, 2.4);
+
+    // ruta seleccionada (centros lejanos)
+    if (sel && !sel.valles) {
+      var sp2 = proj(sel.lon, sel.lat);
+      g += flowLine('route', curve(sp, sp2));
+      g += pulses('route', 2.4);
+    }
+    g += '<g class="hit" data-sab="1">' + home(sp[0], sp[1], 6) + '</g>';
+    g += '<text x="' + (sp[0]+16) + '" y="' + (sp[1]+20) + '" font-size="11" font-weight="600" fill="' + PURPLE + '" pointer-events="none">Sabadell</text>';
+    g += '<g class="hit" data-sab="1"><title>Ver la zona de Sabadell</title>' + pill(sp[0]+62, sp[1]-24, '3 centros · ver zona ›') + '</g>';
+
+    // marcadores lejanos
+    far.forEach(function(i){
+      var c = CENTROS[i], p = proj(c.lon, c.lat), isSel = i === state.sel;
+      if (isSel) g += rings(p[0], p[1], 10, 2.4);
+      g += '<g class="hit" data-idx="' + i + '">' + marker(p[0], p[1], i+1, 10, isSel, c.name + ' · ' + c.km + ' km desde Sabadell') + '</g>';
+      g += '<text x="' + p[0] + '" y="' + (p[1]+26) + '" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)" font-family="Space Grotesk" pointer-events="none">' + c.name + '</text>';
+      g += pill(p[0], p[1]+42, c.km + ' km');
+    });
+    return g;
+  }
+
+  /* ---------- Vista Zona Sabadell (esquema dibujado) ---------- */
+  var ZONE = {
+    sab:              [215, 180],
+    'santa-perpetua': [410, 250],
+    'edar-riu-sec':   [118, 392],
+    'edar-riu-ripoll':[352, 368]
+  };
+  var ROADS = {
+    'santa-perpetua': 'M228,186 C300,190 330,250 363,250',
+    'edar-riu-sec':   'M208,196 C190,270 140,320 120,360',
+    'edar-riu-ripoll':'M222,196 C250,280 310,300 348,338'
+  };
+
+  function edarDrawing(x, y){
+    return '<circle cx="' + (x-22) + '" cy="' + (y-4) + '" r="16" fill="#dbe8f8" stroke="' + BLUE + '" stroke-width="1.5"/>' +
+      '<circle cx="' + (x-22) + '" cy="' + (y-4) + '" r="9" fill="#c5daf3" stroke="' + BLUE + '" stroke-width="1"/>' +
+      '<path d="M' + (x-22) + ',' + (y-4) + ' L' + (x-11) + ',' + (y-12) + '" stroke="' + BLUE + '" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<circle cx="' + (x+6) + '" cy="' + (y-12) + '" r="10" fill="#dbe8f8" stroke="' + BLUE + '" stroke-width="1.5"/>' +
+      '<circle cx="' + (x+6) + '" cy="' + (y-12) + '" r="5" fill="#c5daf3" stroke="' + BLUE + '" stroke-width="1"/>' +
+      '<rect x="' + (x+22) + '" y="' + (y-10) + '" width="20" height="18" rx="2" fill="var(--blue-soft)" stroke="' + BLUE + '" stroke-width="1.5"/>' +
+      '<path d="M' + (x+20) + ',' + (y-10) + ' L' + (x+32) + ',' + (y-18) + ' L' + (x+44) + ',' + (y-10) + 'Z" fill="#c5daf3" stroke="' + BLUE + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '<rect x="' + (x+29) + '" y="' + (y-1) + '" width="6" height="9" fill="' + BLUE + '"/>' +
+      '<rect x="' + (x-40) + '" y="' + (y+14) + '" width="56" height="12" rx="6" fill="#cfe3f8" stroke="' + BLUE + '" stroke-width="1"/>' +
+      '<path d="M' + (x-32) + ',' + (y+20) + ' q4,-4 8,0 t8,0 t8,0 t8,0" fill="none" stroke="' + BLUE + '" stroke-width="1.2" stroke-linecap="round"/>' +
+      '<path d="M' + (x-6) + ',' + (y-2) + ' L' + (x+22) + ',' + (y+2) + '" stroke="' + BLUE + '" stroke-width="1.5" stroke-dasharray="3 2"/>';
+  }
+  function officeDrawing(x, y){
+    var out = '<rect x="' + (x-16) + '" y="' + (y-24) + '" width="32" height="46" rx="3" fill="var(--blue-soft)" stroke="' + BLUE + '" stroke-width="1.5"/>';
+    for (var r = 0; r < 3; r++) for (var c = 0; c < 2; c++) {
+      out += '<rect x="' + (x-10 + c*11) + '" y="' + (y-18 + r*11) + '" width="7" height="7" rx="1" fill="#c5daf3" stroke="' + BLUE + '" stroke-width="1"/>';
+    }
+    out += '<rect x="' + (x-4) + '" y="' + (y+9) + '" width="8" height="13" fill="' + BLUE + '"/>';
+    out += '<path d="M' + x + ',' + (y-24) + ' V' + (y-34) + ' L' + (x+10) + ',' + (y-31) + ' L' + x + ',' + (y-28) + '" fill="' + PURPLE + '" stroke="' + PURPLE + '" stroke-width="1.2" stroke-linejoin="round"/>';
+    return out;
+  }
+
+  function zoneView(){
+    var g = '';
+    // terreno
+    g += '<rect width="500" height="500" rx="14" fill="#eef2f8"/>';
+    // núcleos urbanos
+    g += '<path d="M150,150 C160,110 240,100 275,125 C310,150 300,215 260,232 C215,250 160,235 148,200 C142,182 143,165 150,150Z" fill="var(--purple-soft)" stroke="#d9c6ef" stroke-width="1.5"/>';
+    g += '<path d="M355,225 C365,200 440,198 462,225 C480,250 455,292 415,296 C370,300 345,265 355,225Z" fill="#f6f0fb" stroke="#e3d6f3" stroke-width="1.5"/>';
+    // ríos
+    var RIVER = 'fill="none" stroke="#a9c3e8" stroke-width="7" stroke-linecap="round"';
+    g += '<path d="M60,30 C120,90 100,170 135,240 S150,330 165,380 S215,440 250,470 C250,485 250,495 250,500" ' + RIVER + '/>';
+    g += '<path d="M330,20 C300,100 330,170 300,240 S310,320 292,365 S265,430 250,470" ' + RIVER + '/>';
+    g += '<text x="34" y="140" font-size="10" font-style="italic" fill="#7f9fd0">Riu Sec</text>';
+    g += '<text x="338" y="130" font-size="10" font-style="italic" fill="#7f9fd0">Riu Ripoll</text>';
+
+    // carreteras
+    Object.keys(ROADS).forEach(function(id){
+      g += '<path d="' + ROADS[id] + '" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>';
+      g += '<path d="' + ROADS[id] + '" fill="none" stroke="#cfd6e3" stroke-width="3" stroke-linecap="round"/>';
+    });
+
+    // ruta seleccionada
+    var sel = state.sel === null ? null : CENTROS[state.sel];
+    if (sel && sel.valles) {
+      g += flowLine('route', ROADS[sel.id]);
+      g += pulses('route', 2.4);
+    }
+
+    // Sabadell (base)
+    var s = ZONE.sab;
+    g += '<g class="hit" data-sab="1">' + home(s[0], s[1], 14) + '</g>';
+    g += '<text x="' + s[0] + '" y="' + (s[1]-22) + '" text-anchor="middle" font-size="12" font-weight="700" fill="' + PURPLE + '" font-family="Space Grotesk">Sabadell · base</text>';
+
+    // centros de la zona
+    CENTROS.forEach(function(c, i){
+      if (!c.valles) return;
+      var p = ZONE[c.id], isSel = i === state.sel;
+      g += '<g class="hit" data-idx="' + i + '"><title>' + c.name + ' · ' + c.km + ' km desde Sabadell</title>';
+      g += '<rect class="base" x="' + (p[0]-45) + '" y="' + (p[1]-32) + '" width="90" height="64" rx="10" fill="#fff" stroke="' + (isSel ? BLUE : 'var(--edge)') + '" stroke-width="' + (isSel ? 2.5 : 1.5) + '"/>';
+      g += c.kind === 'EDAR' ? edarDrawing(p[0], p[1]) : officeDrawing(p[0], p[1]);
+      g += badge(p[0]-45, p[1]-32, i+1, isSel);
+      g += '</g>';
+      if (isSel) g += rings(p[0]-45, p[1]-32, 9, 2.4);
+      g += '<text x="' + p[0] + '" y="' + (p[1]+50) + '" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)" font-family="Space Grotesk" pointer-events="none">' + c.name + '</text>';
+      g += pill(p[0], p[1]+66, (c.kind === 'Oficina' ? 'Oficina · ' : '') + c.km + ' km');
+    });
+    g += '<text x="14" y="488" font-size="9.5" fill="#9aa6bb">Esquema de la zona, no a escala</text>';
+    return g;
+  }
+
+  function renderMap(){
+    var fade = lastView !== state.view ? ' class="fade"' : '';
+    lastView = state.view;
+    var inner = state.view === 'cat' ? catView() : zoneView();
+    document.getElementById('map').innerHTML =
+      '<svg viewBox="0 0 ' + SIZE + ' ' + SIZE + '"' + fade + ' role="img" aria-label="Mapa estilizado de la visita seleccionada" font-family="IBM Plex Sans, sans-serif">' + inner + '</svg>';
+    Array.prototype.forEach.call(document.querySelectorAll('#seg button'), function(b){
+      b.classList.toggle('on', b.getAttribute('data-view') === state.view);
+    });
+  }
+
+  function render(){ renderList(); renderTable(); renderSelBar(); renderMap(); }
+
+  /* ---------- Eventos ---------- */
+  function onPick(e){
+    var el = e.target.closest ? e.target.closest('[data-idx]') : null;
+    if (el) { select(Number(el.getAttribute('data-idx'))); return; }
+    var sab = e.target.closest ? e.target.closest('[data-sab]') : null;
+    if (sab) setView('zone');
+  }
+  ['list','tbody','map'].forEach(function(id){
+    var el = document.getElementById(id);
+    el.addEventListener('click', onPick);
+    el.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick(e); }
+    });
+  });
+  document.getElementById('seg').addEventListener('click', function(e){
+    var b = e.target.closest('button');
+    if (b) setView(b.getAttribute('data-view'));
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>

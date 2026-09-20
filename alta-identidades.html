@@ -8,185 +8,42 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#16233f;
-    --navy-2:#1d3157;
-    --blue:#2f5fa8;
-    --blue-soft:#eaf0fa;
-    --purple:#6a3f9e;
-    --purple-soft:#f1e9fa;
-    --ink:#1b2433;
-    --mut:#5b6778;
-    --line:#d7dee9;
-    --bg:#f4f6fa;
-    --card:#ffffff;
-    --edge:#8b98b8;
-    --si-bg:#e3f4ef;
-    --si-ink:#1f7a63;
-    --no-bg:#eef0f3;
-    --no-ink:#68707c;
+    --navy:#16233f; --navy-2:#1d3157; --blue:#2f5fa8; --blue-soft:#eaf0fa;
+    --ink:#1b2433; --mut:#5b6778; --line:#d7dee9; --bg:#f4f6fa; --card:#ffffff;
+    --edge:#a9b7d1; --amber-bg:#fff6e9; --amber-line:#ecc98a; --amber-ink:#6e4711;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0; height:100%;}
-  body{
-    background:var(--bg);
-    font-family:'IBM Plex Sans', sans-serif;
-    color:var(--ink);
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-  }
-
-  .topbar{
-    display:flex; align-items:center; gap:16px;
-    padding:16px 28px;
-    border-bottom:1px solid var(--line);
-    background:var(--card);
-    flex:none;
-  }
-  .back-link{
-    display:flex; align-items:center; gap:6px;
-    font-size:13px; font-weight:600;
-    color:var(--navy-2);
-    text-decoration:none;
-    padding:7px 12px;
-    border:1px solid var(--line);
-    border-radius:8px;
-    flex:none;
-    transition:border-color .15s, background .15s;
-  }
-  .back-link:hover{ border-color:var(--blue); background:var(--blue-soft); }
-  .back-link svg{ width:15px; height:15px; stroke:currentColor; }
-
-  header{ text-align:center; flex:1; min-width:0; }
-  h1{
-    font-family:'Space Grotesk', sans-serif;
-    font-size:21px;
-    font-weight:700;
-    margin:0 0 2px;
-    color:var(--navy);
-    letter-spacing:-0.01em;
-  }
-  h1 .sep{ color:#9aa6bb; font-weight:500; margin:0 8px; }
-  .subtitle{
-    font-size:12.5px;
-    color:var(--mut);
-    margin:0;
-  }
-  .topbar-spacer{ width:126px; flex:none; }
-
-  .hint{
-    position:absolute; top:14px; right:18px; z-index:5;
-    display:flex; align-items:center; gap:6px;
-    background:rgba(255,255,255,.9);
-    border:1px solid var(--line);
-    border-radius:999px;
-    padding:6px 12px;
-    font-size:11px; color:var(--mut);
-    pointer-events:none;
-  }
-  .hint svg{ width:13px; height:13px; stroke:var(--mut); }
-
-  .viewport{
-    position:relative;
-    flex:1;
-    min-height:0;
-    overflow:auto;
-    cursor:grab;
-    background:var(--bg);
-  }
-  .viewport.dragging{ cursor:grabbing; }
-  .viewport.dragging *{ user-select:none; }
-
-  .canvas{
-    position:relative;
-    width:1950px;
-    height:1950px;
-    margin:0 auto;
-  }
-  .canvas > svg{ position:absolute; top:0; left:0; overflow:visible; }
-
-  /* ===== NODOS ===== */
-  .node{
-    position:absolute;
-    background:var(--card);
-    border:1.5px solid var(--line);
-    border-radius:14px;
-    box-shadow:0 1px 3px rgba(15,25,50,.05);
-    padding:12px 18px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    transform:translate(-50%,-50%);
-  }
-  .node .n-icon{
-    width:34px; height:34px; border-radius:9px;
-    background:var(--blue-soft);
-    display:flex; align-items:center; justify-content:center;
-    flex:none;
-  }
-  .node .n-icon svg{ width:18px; height:18px; stroke:var(--blue); }
-  .node .n-title{
-    font-family:'Space Grotesk', sans-serif;
-    font-weight:600; font-size:13.5px; color:var(--ink); line-height:1.25;
-  }
-  .node .n-sub{ font-size:10.5px; color:var(--mut); line-height:1.3; margin-top:2px; }
-
-  .node-entry{
-    background:linear-gradient(160deg,var(--navy),#0f1930);
-    border-color:transparent;
-  }
-  .node-entry .n-icon{ background:rgba(255,255,255,.12); }
-  .node-entry .n-icon svg{ stroke:#fff; }
-  .node-entry .n-title{ color:#fff; }
-
-  .node-final{ border-left:4px solid var(--blue); }
-  .node-final.muted .n-icon{ background:#eef0f3; }
-  .node-final.muted .n-icon svg{ stroke:var(--mut); }
-  .node-final.muted{ border-left-color:var(--mut); }
-
-  /* ===== DECISIÓN (diamante) ===== */
-  .decision{
-    position:absolute;
-    background:linear-gradient(160deg,var(--purple),#4c2c74);
-    clip-path:polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-    display:flex; align-items:center; justify-content:center;
-    color:#fff;
-    transform:translate(-50%,-50%);
-  }
-  .decision .d-inner{
-    max-width:130px; text-align:center;
-    display:flex; flex-direction:column; align-items:center; gap:5px;
-  }
-  .decision .d-inner svg{ width:18px; height:18px; stroke:#ecdffb; flex:none; }
-  .decision .d-title{
-    font-family:'Space Grotesk', sans-serif;
-    font-weight:600; font-size:12px; line-height:1.25; color:#fff;
-  }
-
-  /* ===== ETIQUETAS SI / NO ===== */
-  .edge-label{
-    position:absolute;
-    transform:translate(-50%,-50%);
-    border-radius:999px;
-    padding:4px 12px;
-    font-family:'Space Grotesk', sans-serif;
-    font-weight:600; font-size:11.5px;
-    white-space:nowrap;
-  }
-  .edge-label.si{ background:var(--si-bg); color:var(--si-ink); }
-  .edge-label.no{ background:var(--no-bg); color:var(--no-ink); }
-
-  /* ===== NOTA INFORMATIVA ===== */
-  .info-note{
-    position:absolute;
-    transform:translate(-50%,-50%);
-    max-width:230px;
-    text-align:center;
-    display:flex; align-items:center; gap:7px; justify-content:center;
-    font-size:11px; font-style:italic; color:var(--mut);
-    line-height:1.35;
-  }
-  .info-note svg{ width:15px; height:15px; stroke:var(--mut); flex:none; }
+  html,body{margin:0;padding:0;height:100%;}
+  body{background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--ink);display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;gap:16px;padding:16px 28px;border-bottom:1px solid var(--line);background:var(--card);flex:none;}
+  .back-link{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--navy-2);text-decoration:none;padding:7px 12px;border:1px solid var(--line);border-radius:8px;flex:none;transition:border-color .15s,background .15s;}
+  .back-link:hover{border-color:var(--blue);background:var(--blue-soft);}
+  .back-link svg{width:15px;height:15px;stroke:currentColor;}
+  header{text-align:center;flex:1;min-width:0;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;margin:0 0 2px;color:var(--navy);letter-spacing:-0.01em;}
+  h1 .sep{color:#9aa6bb;font-weight:500;margin:0 8px;}
+  .subtitle{font-size:12.5px;color:var(--mut);margin:0;}
+  .topbar-spacer{width:126px;flex:none;}
+  .viewport{flex:1;min-height:0;overflow:auto;background:var(--bg);padding:36px 16px 56px;}
+  .steps{max-width:720px;margin:0 auto;list-style:none;padding:0;position:relative;}
+  .step{position:relative;display:flex;gap:18px;padding-bottom:22px;}
+  .step:last-child{padding-bottom:0;}
+  .step::before{content:"";position:absolute;left:19px;top:44px;bottom:2px;width:2px;background:var(--edge);}
+  .step:last-child::before{display:none;}
+  .num{flex:none;width:40px;height:40px;border-radius:50%;background:var(--card);border:2px solid var(--blue);color:var(--blue);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;z-index:1;}
+  .step.first .num{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .step.last .num{background:var(--blue);color:#fff;}
+  .card{flex:1;min-width:0;background:var(--card);border:1.5px solid var(--line);border-radius:14px;box-shadow:0 1px 3px rgba(15,25,50,.05);padding:14px 18px;}
+  .step.first .card{background:linear-gradient(160deg,var(--navy),#0f1930);border-color:transparent;}
+  .step.last .card{border-left:4px solid var(--blue);}
+  .card .t{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;line-height:1.25;color:var(--ink);}
+  .card .sub{font-size:11.5px;font-weight:600;color:var(--blue);margin-top:2px;}
+  .card .d{font-size:13px;line-height:1.5;color:var(--mut);margin-top:6px;}
+  .step.first .t{color:#fff;} .step.first .sub{color:#cfe0ff;} .step.first .d{color:#cfd8ea;}
+  .note{margin-top:10px;font-size:12px;line-height:1.45;background:var(--amber-bg);border:1px solid var(--amber-line);color:var(--amber-ink);border-radius:8px;padding:8px 10px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .chip{font-size:11.5px;font-weight:600;color:var(--navy-2);background:var(--blue-soft);border-radius:999px;padding:4px 11px;}
+  @media (max-width:600px){ .topbar{padding:12px 14px;} .topbar-spacer{display:none;} h1{font-size:17px;} .num{width:34px;height:34px;} .step::before{left:16px;top:38px;} }
 </style>
 </head>
 <body>
@@ -198,251 +55,87 @@
   </a>
   <header>
     <h1>Alta de Identidades<span class="sep">|</span>Gestión de Usuarios</h1>
-    <p class="subtitle">Flujo de decisión desde la solicitud de RRHH hasta la activación completa de accesos.</p>
+    <p class="subtitle">Recorrido lineal desde la solicitud de RRHH hasta la activación completa de accesos.</p>
   </header>
   <div class="topbar-spacer"></div>
 </div>
 
-<div class="viewport" id="viewport">
-  <div class="hint">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
-    Arrastra para moverte
-  </div>
-  <div class="canvas">
-
-    <svg width="1950" height="1950">
-      <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" fill="var(--edge)"/>
-        </marker>
-      </defs>
-
-      <!-- tronco inicial -->
-      <path d="M950,165 L950,205" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M950,275 L950,315" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-
-      <!-- AD -> dos decisiones -->
-      <path d="M950,385 C950,405 800,405 730,425" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M950,385 C950,405 1100,405 1170,425" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-
-      <!-- diamante buzon: si / no -->
-      <path d="M730,560 L730,595" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M835,490 C880,530 870,650 870,715" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M730,665 C730,695 800,712 870,715" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-
-      <!-- diamante identidad: si / no -->
-      <path d="M1170,560 L1170,595" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M1065,490 C1020,530 1030,650 1030,715" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M1170,665 C1170,695 1100,712 1030,715" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-
-      <!-- telefono -->
-      <path d="M950,785 L950,815" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-
-      <!-- decision necesita telefono -->
-      <path d="M1060,880 C1150,880 1180,880 1205,880" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M950,945 L950,1060" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M1300,915 C1300,1000 1050,1055 950,1060" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-
-      <!-- decision necesita tablet -->
-      <path d="M840,1130 C740,1160 680,1200 650,1240" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M650,1320 L650,1390" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M1060,1130 C1150,1200 1100,1450 950,1540" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M650,1470 C650,1510 800,1535 950,1540" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-
-      <!-- decision alta vpn -->
-      <path d="M840,1610 C780,1650 760,1690 750,1730" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-      <path d="M1060,1610 C1120,1650 1140,1690 1150,1730" fill="none" stroke="var(--edge)" stroke-width="2.4" marker-end="url(#arrow)"/>
-    </svg>
-
-    <!-- ===== TRONCO INICIAL ===== -->
-    <div class="node node-entry" style="left:950px; top:130px; width:300px; height:70px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg></div>
-      <div>
-        <div class="n-title">Recibimos correo de RRHH</div>
+<div class="viewport">
+  <ol class="steps">
+    <li class="step first">
+      <div class="num">1</div>
+      <div class="card">
+        <div class="t">Recibimos correo de RRHH</div>
+        
+        <div class="d">RRHH comunica la incorporación de la persona y da inicio al proceso de alta.</div>
+        
       </div>
-    </div>
-
-    <div class="node" style="left:950px; top:240px; width:300px; height:70px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-      <div>
-        <div class="n-title">Portal CAU</div>
-        <div class="n-sub">Alta unificada</div>
+    </li>
+    <li class="step">
+      <div class="num">2</div>
+      <div class="card">
+        <div class="t">Portal CAU</div>
+        <div class="sub">Alta unificada</div>
+        <div class="d">Se registra la solicitud de alta en el portal CAU, que centraliza todas las peticiones del proceso.</div>
+        
       </div>
-    </div>
-
-    <div class="node" style="left:950px; top:350px; width:300px; height:70px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
-      <div>
-        <div class="n-title">Creación de usuario en AD</div>
+    </li>
+    <li class="step">
+      <div class="num">3</div>
+      <div class="card">
+        <div class="t">Creación de usuario en AD</div>
+        
+        <div class="d">Se crea la cuenta del usuario en Active Directory.</div>
+        
       </div>
-    </div>
-
-    <!-- ===== DOS DECISIONES INDEPENDIENTES ===== -->
-    <div class="decision" style="left:730px; top:490px; width:220px; height:140px;">
-      <div class="d-inner">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
-        <div class="d-title">¿Buzón de correo?</div>
+    </li>
+    <li class="step">
+      <div class="num">4</div>
+      <div class="card">
+        <div class="t">Buzón de correo e identidad digital</div>
+        
+        <div class="d">Se crean el buzón de correo corporativo y la identidad digital del usuario, según lo que requiera cada alta.</div>
+        
       </div>
-    </div>
-
-    <div class="decision" style="left:1170px; top:490px; width:220px; height:140px;">
-      <div class="d-inner">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
-        <div class="d-title">¿Identidad digital?</div>
+    </li>
+    <li class="step">
+      <div class="num">5</div>
+      <div class="card">
+        <div class="t">Ordenador</div>
+        <div class="sub">Maquetación</div>
+        <div class="d">Si el usuario necesita ordenador, se maqueta un equipo: arranque por pendrive e instalación del software corporativo.</div>
+        
       </div>
-    </div>
-
-    <div class="edge-label si" style="left:730px; top:578px;">Sí</div>
-    <div class="edge-label no" style="left:872px; top:540px;">No</div>
-    <div class="edge-label si" style="left:1170px; top:578px;">Sí</div>
-    <div class="edge-label no" style="left:1028px; top:540px;">No</div>
-
-    <div class="node" style="left:730px; top:630px; width:210px; height:70px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg></div>
-      <div>
-        <div class="n-title">Buzón de correo</div>
+    </li>
+    <li class="step">
+      <div class="num">6</div>
+      <div class="card">
+        <div class="t">Teléfono</div>
+        <div class="sub">SIM / eSIM</div>
+        <div class="d">Si el usuario necesita teléfono, se gestiona la línea y se le asigna una SIM o eSIM.</div>
+        
       </div>
-    </div>
-
-    <div class="node" style="left:1170px; top:630px; width:210px; height:70px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg></div>
-      <div>
-        <div class="n-title">Identidad digital</div>
+    </li>
+    <li class="step">
+      <div class="num">7</div>
+      <div class="card">
+        <div class="t">Tablet</div>
+        <div class="sub">CyberArk y SIM de Orange</div>
+        <div class="d">Si el usuario necesita tablet, se solicita a Infraone la creación de las membresías de CyberArk y se abre un ticket para pedir la SIM con la APN de Orange.</div>
+        <div class="note">Hay que añadir al iPad la GPO especial para la APN, pero no hace falta pedirla.</div>
       </div>
-    </div>
-
-    <!-- ===== CONFLUENCIA: TELEFONO ===== -->
-    <div class="node" style="left:950px; top:750px; width:270px; height:70px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg></div>
-      <div>
-        <div class="n-title">Teléfono</div>
+    </li>
+    <li class="step last">
+      <div class="num">8</div>
+      <div class="card">
+        <div class="t">VPN</div>
+        <div class="sub">Activación completa de accesos</div>
+        <div class="d">Si el usuario necesita acceso remoto, se da de alta la VPN. Con este paso quedan activados todos los accesos.</div>
+        
       </div>
-    </div>
-
-    <!-- ===== DECISION: NECESITA TELEFONO ===== -->
-    <div class="decision" style="left:950px; top:880px; width:220px; height:140px;">
-      <div class="d-inner">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg>
-        <div class="d-title">¿Necesita teléfono?</div>
-      </div>
-    </div>
-
-    <div class="edge-label si" style="left:1150px; top:862px;">Sí</div>
-    <div class="edge-label no" style="left:928px; top:990px;">No</div>
-
-    <div class="node" style="left:1300px; top:880px; width:190px; height:70px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
-      <div>
-        <div class="n-title">SIM / eSIM</div>
-      </div>
-    </div>
-
-    <!-- ===== DECISION: NECESITA TABLET ===== -->
-    <div class="decision" style="left:950px; top:1130px; width:220px; height:140px;">
-      <div class="d-inner">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-        <div class="d-title">¿Necesita tablet?</div>
-      </div>
-    </div>
-
-    <div class="edge-label si" style="left:778px; top:1190px;">Sí</div>
-    <div class="edge-label no" style="left:1122px; top:1190px;">No</div>
-
-    <div class="node" style="left:650px; top:1280px; width:230px; height:80px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg></div>
-      <div>
-        <div class="n-title">Crear membresías CyberArk</div>
-        <div class="n-sub">Solicitar a Infraone</div>
-      </div>
-    </div>
-
-    <div class="node" style="left:650px; top:1430px; width:230px; height:80px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
-      <div>
-        <div class="n-title">Ticket: solicitar SIM</div>
-        <div class="n-sub">APN de Orange</div>
-      </div>
-    </div>
-
-    <div class="info-note" style="left:1170px; top:1355px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-      El iPad ya aplica una GPO especial para la APN — no hace falta pedirla
-    </div>
-
-    <!-- ===== DECISION: ALTA VPN ===== -->
-    <div class="decision" style="left:950px; top:1610px; width:220px; height:140px;">
-      <div class="d-inner">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.35 8.95a1 1 0 0 1-.6-.01C8.5 20.5 5 18 5 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C15.51 3.79 18 5 20 5a1 1 0 0 1 1 1z"/></svg>
-        <div class="d-title">¿Alta VPN?</div>
-      </div>
-    </div>
-
-    <div class="edge-label si" style="left:778px; top:1660px;">Sí</div>
-    <div class="edge-label no" style="left:1122px; top:1660px;">No</div>
-
-    <!-- ===== NODOS FINALES ===== -->
-    <div class="node node-final" style="left:750px; top:1770px; width:230px; height:80px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.35 8.95a1 1 0 0 1-.6-.01C8.5 20.5 5 18 5 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C15.51 3.79 18 5 20 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></div>
-      <div>
-        <div class="n-title">VPN dada de alta</div>
-      </div>
-    </div>
-
-    <div class="node node-final muted" style="left:1150px; top:1770px; width:230px; height:80px;">
-      <div class="n-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.35 8.95a1 1 0 0 1-.6-.01C8.5 20.5 5 18 5 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C15.51 3.79 18 5 20 5a1 1 0 0 1 1 1z"/></svg></div>
-      <div>
-        <div class="n-title">Sin VPN</div>
-      </div>
-    </div>
-
-  </div>
+    </li>
+  </ol>
 </div>
-
-<script>
-  (function(){
-    var vp = document.getElementById('viewport');
-    var hint = vp.querySelector('.hint');
-    var isDown = false;
-    var startX, startY, scrollLeft, scrollTop;
-
-    function down(x, y){
-      isDown = true;
-      startX = x; startY = y;
-      scrollLeft = vp.scrollLeft; scrollTop = vp.scrollTop;
-      vp.classList.add('dragging');
-    }
-    function move(x, y){
-      if(!isDown) return;
-      vp.scrollLeft = scrollLeft - (x - startX);
-      vp.scrollTop = scrollTop - (y - startY);
-    }
-    function up(){
-      isDown = false;
-      vp.classList.remove('dragging');
-    }
-
-    vp.addEventListener('mousedown', function(e){
-      down(e.pageX, e.pageY);
-      e.preventDefault();
-    });
-    window.addEventListener('mousemove', function(e){ move(e.pageX, e.pageY); });
-    window.addEventListener('mouseup', up);
-
-    vp.addEventListener('touchstart', function(e){
-      var t = e.touches[0];
-      down(t.pageX, t.pageY);
-    }, {passive:true});
-    vp.addEventListener('touchmove', function(e){
-      var t = e.touches[0];
-      move(t.pageX, t.pageY);
-    }, {passive:true});
-    vp.addEventListener('touchend', up);
-
-    vp.scrollLeft = (1950 - vp.clientWidth) / 2;
-    vp.scrollTop = Math.max(0, (1950 - vp.clientHeight) / 2 - 60);
-    vp.addEventListener('mousedown', function(){ if(hint) hint.style.display = 'none'; }, {once:true});
-  })();
-</script>
 
 </body>
 </html>

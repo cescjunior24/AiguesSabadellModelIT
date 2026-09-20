@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventario de Ordenadores · Gestión de Dispositivos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16233f; --navy-2:#1d3157; --blue:#2f5fa8; --blue-soft:#eaf0fa;
+    --purple:#6a3f9e; --purple-soft:#f1e9fa;
+    --amber:#b5791f; --amber-bg:#fff6e9; --amber-line:#ecc98a; --amber-ink:#6e4711;
+    --ink:#1b2433; --mut:#5b6778; --line:#d7dee9; --bg:#f4f6fa; --card:#ffffff; --edge:#a9b7d1;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--ink);display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;gap:16px;padding:16px 28px;border-bottom:1px solid var(--line);background:var(--card);flex:none;}
+  .back-link{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--navy-2);text-decoration:none;padding:7px 12px;border:1px solid var(--line);border-radius:8px;flex:none;transition:border-color .15s,background .15s;}
+  .back-link:hover{border-color:var(--blue);background:var(--blue-soft);}
+  .back-link svg{width:15px;height:15px;stroke:currentColor;}
+  header{text-align:center;flex:1;min-width:0;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;margin:0 0 2px;color:var(--navy);letter-spacing:-0.01em;}
+  h1 .sep{color:#9aa6bb;font-weight:500;margin:0 8px;}
+  .subtitle{font-size:12.5px;color:var(--mut);margin:0;}
+  .topbar-spacer{width:126px;flex:none;}
+
+  .viewport{flex:1;min-height:0;overflow:auto;padding:28px 24px 48px;}
+  .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+  .panel{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:18px 20px 20px;}
+  .panel-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none;background:var(--blue-soft);}
+  .icon svg{width:18px;height:18px;stroke:var(--blue);}
+  .panel-title{font-family:'Space Grotesk',sans-serif;font-size:15.5px;font-weight:600;color:var(--navy);}
+  .panel-title .who{font-weight:400;color:var(--mut);font-size:13px;}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .kpi{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;}
+  .kpi.dark{background:linear-gradient(160deg,var(--navy),#0f1930);border-color:transparent;color:#fff;}
+  .kpi .v{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;line-height:1.1;}
+  .kpi .l{font-size:12.5px;font-weight:600;margin-top:4px;}
+  .kpi .s{font-size:11.5px;color:var(--mut);margin-top:2px;line-height:1.35;}
+  .kpi.dark .s{color:#cfe0ff;}
+
+  .cols{display:grid;grid-template-columns:1.7fr 1fr;gap:18px;align-items:start;}
+  .chart svg{display:block;width:100%;height:auto;}
+  .bar{cursor:pointer;transition:opacity .15s;}
+  .bar:hover rect.b{opacity:.85;}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;font-size:11.5px;color:var(--mut);align-items:center;}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+  .hint{font-size:11.5px;color:var(--mut);margin-top:6px;}
+
+  .concl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .concl li{font-size:13px;line-height:1.5;color:var(--mut);padding-left:16px;position:relative;}
+  .concl li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:2px;background:var(--blue);}
+  .concl li.w::before{background:var(--amber);}
+  .concl b{color:var(--ink);}
+  .warn{margin-top:14px;background:var(--amber-bg);border:1px solid var(--amber-line);color:var(--amber-ink);border-radius:9px;padding:10px 12px;font-size:12px;line-height:1.45;}
+
+  .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px;}
+  .tools input{font:inherit;font-size:13px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;min-width:240px;background:#fff;color:var(--ink);}
+  .tools input:focus{outline:2px solid var(--blue);outline-offset:-1px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--blue-soft);color:var(--navy-2);font-size:12px;font-weight:600;padding:5px 6px 5px 11px;border-radius:999px;}
+  .chip button{border:0;background:var(--blue);color:#fff;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:11px;line-height:1;}
+  .count{margin-left:auto;font-size:12px;color:var(--mut);}
+  .tbl{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:10px;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{position:sticky;top:0;background:#f8f9fc;text-align:left;font-size:10.5px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  td{padding:8px 12px;border-bottom:1px solid #edf0f5;white-space:nowrap;}
+  tr:last-child td{border-bottom:0;}
+  td.name{font-family:'Space Grotesk',sans-serif;font-weight:600;}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:#eef0f3;color:var(--mut);}
+  .tag.ok{background:#e3f4ef;color:#1f7a63;}
+  .tag.warn2{background:var(--amber-bg);color:var(--amber-ink);}
+  .tag.bad{background:#fdecec;color:#a33a3a;}
+  .stale{color:var(--amber-ink);font-weight:600;}
+
+  @media (max-width:900px){
+    .kpis{grid-template-columns:repeat(2,1fr);}
+    .cols{grid-template-columns:1fr;}
+    .topbar{padding:12px 14px;} .topbar-spacer{display:none;} h1{font-size:17px;}
+    .viewport{padding:18px 16px 40px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back-link" href="modelo-prestacion-servicio-it.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Volver al modelo
+  </a>
+  <header>
+    <h1>Inventario de Ordenadores<span class="sep">|</span>Gestión de Dispositivos</h1>
+    <p class="subtitle">Export de AD/SCCM del 19 de septiembre de 2026 · año de lanzamiento estimado por modelo.</p>
+  </header>
+  <div class="topbar-spacer"></div>
+</div>
+
+<div class="viewport">
+  <div class="wrap">
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="cols">
+      <div class="panel chart">
+        <div class="panel-head">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 17V11M13 17V7M18 17v-4"/></svg></div>
+          <div class="panel-title">ORDENADORES <span class="who">| Por año de lanzamiento</span></div>
+        </div>
+        <div id="chart"></div>
+        <div class="legend">
+          <span><i style="background:var(--blue)"></i>2022 o posterior</span>
+          <span><i style="background:var(--amber)"></i>5 o más años (2021 o anterior)</span>
+          <span><i style="background:#b7c1d4"></i>Sin identificar</span>
+        </div>
+        <p class="hint">Pulsa una barra para filtrar la tabla por ese año.</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="icon" style="background:var(--purple-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+          <div class="panel-title">LECTURA <span class="who">| Qué nos dice</span></div>
+        </div>
+        <ul class="concl" id="concl"></ul>
+        <div class="warn"><b>Faltan datos:</b> usuario asignado y procesador. Año estimado por modelo; 5 equipos sin identificar.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div class="panel-title">LISTADO <span class="who">| Todos los equipos</span></div>
+      </div>
+      <div class="tools">
+        <input id="q" type="search" placeholder="Buscar por equipo, modelo o marca…" aria-label="Buscar">
+        <span id="chip"></span>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Equipo</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Windows</th><th>Windows 11</th><th>Último acceso AD</th><th>Usuario</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  // [equipo, marca, modelo, año estimado del modelo (null = sin identificar), SO, estado Win11, último acceso AD]
+  var RAW = [["SRVDEVSOCADE","innotek GmbH","VirtualBox",null,"Windows 10 Pro","Desconocido","2026-09-11"],["5CD72756BB","HP","HP ProBook 430 G4",2017,"Windows 10 Pro","Hardware Incompatible","2026-09-07"],["DESKTOP-E9875BL","Gigabyte Technology Co., Ltd.","Z590 D",null,"Windows 10 Enterprise","Hardware Incompatible","2026-09-13"],["1H86200WPD","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Pendiente","2026-09-03"],["3LLT512","Dell Inc.","OptiPlex 3020",2014,"Windows 11 Pro","Pendiente","2026-09-08"],["5CD0272JZL","HP","HP ZBook 17 G6",2019,"Windows 11 Pro","Pendiente","2026-08-31"],["5CD04463YQ","HP","HP ZBook 17 G6",2019,"Windows 11 Pro","Pendiente","2026-09-14"],["5CD1028FFT","HP","HP ProBook 640 G8 Notebook PC",2021,"Windows 11 Pro","Pendiente","2026-09-14"],["5CD5494JN3","HP","HP EliteBook 6 G1i 13 inch Notebook AI PC",2025,"Windows 11 Pro","Pendiente","2026-08-31"],["5CD60333FW","HP","HP ProBook 430 G3",2016,"Windows 11 Pro","Pendiente","2026-09-14"],["5CD6043G8F","HP","HP EliteBook 6 G1i 13 inch Notebook AI PC",2025,"Windows 11 Pro","Pendiente","2026-09-14"],["5CD6166H58","HP","HP ProBook 430 G3",2016,"Windows 11 Pro","Pendiente","2026-09-10"],["5CD7202C5X","HP","HP ProBook 430 G4",2017,"Windows 11 Pro","Pendiente","2026-08-10"],["5CD7202C5Y","HP","HP ProBook 430 G4",2017,"Windows 11 Pro","Pendiente","2026-09-14"],["5CD8513H9Y","<Not Found>","<Not Found>",null,"Windows 11 Pro","Pendiente","2026-07-16"],["5CG0245QY1","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Pendiente","2026-08-03"],["5CG052BH0L","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Pendiente","2026-09-08"],["5CG052BJNW","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Pendiente","2026-09-07"],["5CG052BKG8","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Pendiente","2026-09-14"],["5CG645376W","HP","HP EliteBook 840 G3",2016,"Windows 11 Pro","Pendiente","2026-09-03"],["5CG90959NP","","",null,"Windows 11 Pro","Pendiente","2026-09-08"],["5CG9458HQG","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Pendiente","2026-09-17"],["CZC80670W7","HP","HP ProDesk 400 G4 MT",2017,"Windows 11 Pro","Pendiente","2026-09-15"],["DESKTOP-879983Q","Dell Inc.","OptiPlex 3020M",2014,"Windows 11 Pro","Pendiente","2026-09-08"],["DESKTOP-M6ND0T0","HP","HP ZBook Power G7 Mobile Workstation",2020,"Windows 11 Pro","Pendiente","2026-09-08"],["H0S1812","","",null,"Windows 11 Pro","Pendiente","2026-09-11"],["H9W8GQ2","Dell Inc.","OptiPlex 3050",2017,"Windows 11 Pro","Pendiente","2026-09-17"],["PF3N0RZR","LENOVO","20W1S35901",2021,"Windows 11 Pro","Pendiente","2026-08-24"],["1H86200WM3","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-10"],["1H86200WM4","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-10"],["1H86200WML","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-08"],["1H86200WMQ","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-10"],["1H86200WMV","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-10"],["1H86200WN0","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-17"],["1H86200WN6","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-08-31"],["1H86200WN7","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-01"],["1HF52105YG","HP","HP Pro Mini 400 G9 Desktop PC",2022,"Windows 11 Pro","Actualizada","2026-09-13"],["1HF5431FLJ","HP","HP Pro Mini 400 G9 Desktop PC",2022,"Windows 11 Pro","Actualizada","2026-09-10"],["5CD024GZRX","HP","HP ZBook 17 G6",2019,"Windows 11 Pro","Actualizada","2026-09-15"],["5CD0272JZM","HP","HP ZBook 17 G6",2019,"Windows 11 Pro","Actualizada","2026-09-17"],["5CD0272JZN","HP","HP ZBook 17 G6",2019,"Windows 11 Pro","Actualizada","2026-09-13"],["5CD1028FF6","HP","HP ProBook 640 G8 Notebook PC",2021,"Windows 11 Pro","Actualizada","2026-09-10"],["5CD1028FHY","HP","HP ProBook 640 G8 Notebook PC",2021,"Windows 11 Pro","Actualizada","2026-09-08"],["5CD106KQHT","HP","HP 340S G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-08"],["5CD106KQML","HP","HP 340S G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-14"],["5CD335H526","HP","HP EliteBook 640 14 inch G9 Notebook PC",2022,"Windows 11 Pro","Actualizada","2026-08-31"],["5CD335H54B","HP","HP EliteBook 640 14 inch G9 Notebook PC",2022,"Windows 11 Pro","Actualizada","2026-09-10"],["5CD335H558","HP","HP EliteBook 640 14 inch G9 Notebook PC",2022,"Windows 11 Pro","Actualizada","2026-09-14"],["5CD335H56M","HP","HP EliteBook 640 14 inch G9 Notebook PC",2022,"Windows 11 Pro","Actualizada","2026-09-08"],["5CD346HCMT","HP","HP EliteBook 640 14 inch G9 Notebook PC",2022,"Windows 11 Pro","Actualizada","2026-09-14"],["5CD4218Y65","HP","HP EliteBook 640 14 inch G10 Notebook PC",2023,"Windows 11 Pro","Actualizada","2026-09-08"],["5CD4226TT3","HP","HP EliteBook 640 14 inch G10 Notebook PC",2023,"Windows 11 Pro","Actualizada","2026-09-10"],["5CD4226TT7","HP","HP EliteBook 640 14 inch G10 Notebook PC",2023,"Windows 11 Pro","Actualizada","2026-09-14"],["5CD424975K","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-14"],["5CD4249762","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-10"],["5CD5075XQJ","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-08-26"],["5CD5075XQM","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-14"],["5CD5075XR7","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-10"],["5CD5075XRK","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-08"],["5CD5075XRQ","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-14"],["5CD5075XRW","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-10"],["5CD5075XRY","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-09"],["5CD5421T16","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-08"],["5CD542406G","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-14"],["5CD5443Z4L","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-08"],["5CD5443Z5H","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-13"],["5CD5443Z8V","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-10"],["5CD549DL98","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-17"],["5CD549DL9Q","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-08"],["5CD549DLB5","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-14"],["5CD549DLBN","HP","HP EliteBook 6 G1i 14 inch Notebook AI PC",2025,"Windows 11 Pro","Actualizada","2026-09-07"],["5CD8085DGN","HP","HP ProBook 430 G5",2018,"Windows 11 Pro","Actualizada","2026-09-10"],["5CD81245Z8","HP","HP ProBook 430 G5",2018,"Windows 11 Pro","Actualizada","2026-09-10"],["5CD8173QHL","HP","HP ProBook 430 G5",2018,"Windows 11 Pro","Actualizada","2026-09-16"],["5CD8416C9F","HP","HP ProBook 430 G5",2018,"Windows 11 Pro","Actualizada","2026-09-15"],["5CD8513H96","HP","HP ProBook 430 G5",2018,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG011B9JY","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG011B9KT","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-15"],["5CG011B9WS","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-17"],["5CG011B9X0","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG011B9X4","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-08-19"],["5CG014CBG4","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG014CBGV","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG014CBH3","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-03"],["5CG014CBH4","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG014CBHB","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG014CBHV","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-07-09"],["5CG014CBJ1","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG014CBJ4","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-08"],["5CG014CBJ6","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG0221TQY","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-11"],["5CG0245QYV","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-08"],["5CG0245QYX","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG0245QZ9","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG0267JLL","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-15"],["5CG0267JLT","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-15"],["5CG0267JMB","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-10"],["5CG0267JMJ","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG0294BXB","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG0294CT6","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG0294D88","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-08"],["5CG0294D8V","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-17"],["5CG0301B8N","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG0301D3K","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-17"],["5CG0301D42","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-15"],["5CG0301DCL","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG0301DPJ","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-08-20"],["5CG0401HNQ","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG0401HW2","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-10"],["5CG052BG9H","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-17"],["5CG052BGZH","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-15"],["5CG052BH80","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-15"],["5CG052BHNY","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-10"],["5CG052BJD3","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-17"],["5CG052BJMG","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-08"],["5CG052BJMY","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-15"],["5CG052BJN4","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG052BJP4","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-17"],["5CG052BKGG","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-10"],["5CG0533XF8","HP","HP EliteBook 840 G7 Notebook PC",2020,"Windows 11 Pro","Actualizada","2026-09-08"],["5CG90711ZB","HP","HP EliteBook 840 G5",2018,"Windows 11 Pro","Actualizada","2026-09-09"],["5CG909596D","HP","HP EliteBook 840 G5",2018,"Windows 11 Pro","Actualizada","2026-09-10"],["5CG9153GY1","HP","HP EliteBook 840 G5",2018,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG93331P9","HP","HP EliteBook 840 G5",2018,"Windows 11 Pro","Actualizada","2026-09-08"],["5CG9350Y4T","HP","HP EliteBook 840 G5",2018,"Windows 11 Pro","Actualizada","2026-09-10"],["5CG9350Z0L","HP","HP EliteBook 840 G5",2018,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG93880S3","HP","HP EliteBook 830 G5",2018,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG9397WX2","HP","HP EliteBook 850 G6",2019,"Windows 11 Pro","Actualizada","2026-09-17"],["5CG94219HR","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-08"],["5CG94219J2","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-07-06"],["5CG94219KS","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-14"],["5CG9458HPM","HP","HP EliteBook 840 G6",2019,"Windows 11 Pro","Actualizada","2026-09-11"],["CASPOR0078","HP","HP ProBook 430 G5",2018,"Windows 11 Pro","Actualizada","2026-09-10"],["CASPOR0091","HP","HP ProBook 430 G5",2018,"Windows 11 Pro","Actualizada","2026-09-10"],["CND0136GQX","HP","HP Elite x2 G4",2019,"Windows 11 Pro","Actualizada","2026-09-08"],["CND04442WP","HP","HP Elite x2 G4",2019,"Windows 11 Pro","Actualizada","2026-08-14"],["CZC916B9FD","HP","HP ProDesk 600 G4 SFF",2018,"Windows 11 Pro","Actualizada","2026-09-08"],["CZC916BCPY","HP","HP ProDesk 600 G4 SFF",2018,"Windows 11 Pro","Actualizada","2026-09-16"],["CZC9428JFT","HP","HP ProDesk 600 G5 SFF",2019,"Windows 11 Pro","Actualizada","2026-09-12"],["CZC946B90H","HP","HP ProDesk 600 G5 SFF",2019,"Windows 11 Pro","Actualizada","2026-09-12"],["DESKTOP-E95A7E4","HP","HP ZBook Power G7 Mobile Workstation",2020,"Windows 11 Pro","Actualizada","2026-09-14"],["DESKTOP-J13EU3K","HP","HP EliteBook 640 14 inch G11 Notebook PC",2024,"Windows 11 Pro","Actualizada","2026-09-09"],["DESKTOP-OF9UB9D","HP","HP EliteBook 850 G6",2019,"Windows 11 Pro","Actualizada","2026-09-10"],["PF3MZSMD","LENOVO","20W1S35901",2021,"Windows 11 Pro","Actualizada","2026-09-10"],["PF3MZSNB","LENOVO","20W1S35901",2021,"Windows 11 Pro","Actualizada","2026-09-01"],["PF3ND24D","LENOVO","20W1S35901",2021,"Windows 11 Pro","Actualizada","2026-09-10"],["PF3NWDCS","LENOVO","20W1S35901",2021,"Windows 11 Pro","Actualizada","2026-09-10"],["PF3NX6JD","LENOVO","20W1S35901",2021,"Windows 11 Pro","Actualizada","2026-09-14"],["PF3NXCFD","LENOVO","20W1S35901",2021,"Windows 11 Pro","Actualizada","2026-09-14"],["PF3NY2H9","LENOVO","20W1S35901",2021,"Windows 11 Pro","Actualizada","2026-09-08"],["PF3P8Z1V","LENOVO","20W1S35901",2021,"Windows 11 Pro","Actualizada","2026-09-08"],["PF3P92E4","LENOVO","20W1S35901",2021,"Windows 11 Pro","Actualizada","2026-08-31"],["PF3PB79Y","LENOVO","20W1S35901",2021,"Windows 11 Pro","Actualizada","2026-09-10"],["R914EYV3","LENOVO","20W9S0WT01",2021,"Windows 11 Pro","Actualizada","2026-09-14"],["R914GMRQ","LENOVO","20W9S0WT01",2021,"Windows 11 Pro","Actualizada","2026-09-08"]];
+  var REF = new Date('2026-09-19T00:00:00Z'); // fecha del export
+  var STALE_DAYS = 30;
+  var NOW_YEAR = 2026;
+
+  var D = RAW.map(function(r){
+    return { name:r[0], man:r[1], model:r[2], year:r[3], os:r[4], w11:r[5], logon:r[6],
+             stale: (REF - new Date(r[6] + 'T00:00:00Z')) / 864e5 > STALE_DAYS };
+  });
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function pct(a, b){ return Math.round(a / b * 100); }
+
+  var state = { year:null, q:'' };
+
+  /* ---------- Cifras ---------- */
+  var total = D.length;
+  var known = D.filter(function(d){ return d.year; });
+  var old5 = known.filter(function(d){ return NOW_YEAR - d.year >= 5; }).length;
+  var avgYear = Math.round(known.reduce(function(a, d){ return a + d.year; }, 0) / known.length);
+  var w11ok = D.filter(function(d){ return d.w11 === 'Actualizada'; }).length;
+  var onW11 = D.filter(function(d){ return /Windows 11/.test(d.os); }).length;
+  var onW10 = D.filter(function(d){ return /Windows 10/.test(d.os); });
+  var staleList = D.filter(function(d){ return d.stale; });
+  var hp = D.filter(function(d){ return d.man === 'HP'; }).length;
+
+  document.getElementById('kpis').innerHTML =
+    '<div class="kpi dark"><div class="v">' + total + '</div><div class="l">Ordenadores</div><div class="s">En el dominio (OU T14-Cassa)</div></div>' +
+    '<div class="kpi"><div class="v">' + avgYear + '</div><div class="l">Año medio de lanzamiento</div><div class="s">Sobre ' + known.length + ' equipos identificados</div></div>' +
+    '<div class="kpi"><div class="v">' + pct(old5, known.length) + '%</div><div class="l">Con 5 o más años</div><div class="s">' + old5 + ' equipos lanzados en 2021 o antes</div></div>' +
+    '<div class="kpi"><div class="v">' + pct(w11ok, total) + '%</div><div class="l">Windows 11 actualizado</div><div class="s">' + w11ok + ' de ' + total + ' según el export</div></div>';
+
+  /* ---------- Gráfico de barras ---------- */
+  var years = [];
+  for (var y = 2014; y <= 2025; y++) years.push(y);
+  var counts = {}; years.forEach(function(y){ counts[y] = 0; });
+  var unknown = 0;
+  D.forEach(function(d){ if (d.year) counts[d.year]++; else unknown++; });
+  var series = years.map(function(y){ return { key:y, label:String(y), n:counts[y] }; });
+  series.push({ key:'na', label:'Sin dato', n:unknown });
+
+  function renderChart(){
+    var W = 640, H = 300, L = 34, R = 8, T = 22, B = 36;
+    var max = Math.max.apply(null, series.map(function(s){ return s.n; }));
+    var top = Math.ceil(max / 10) * 10;
+    var pw = (W - L - R) / series.length, bw = pw * 0.66;
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Ordenadores por año de lanzamiento">';
+    for (var t = 0; t <= top; t += 10) {
+      var yy = T + (H - T - B) * (1 - t / top);
+      svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yy + '" y2="' + yy + '" stroke="#edf0f5"/>' +
+             '<text x="' + (L - 8) + '" y="' + yy + '" text-anchor="end" dominant-baseline="central" font-size="10" fill="#8890a0">' + t + '</text>';
+    }
+    series.forEach(function(s, i){
+      var x = L + i * pw + (pw - bw) / 2;
+      var h = (H - T - B) * (s.n / top), y0 = H - B - h;
+      var isNa = s.key === 'na';
+      var color = isNa ? '#b7c1d4' : (NOW_YEAR - s.key >= 5 ? 'var(--amber)' : 'var(--blue)');
+      var sel = state.year === s.key;
+      var dim = state.year !== null && !sel ? ' opacity=".35"' : '';
+      svg += '<g class="bar" data-key="' + s.key + '"' + dim + '><title>' + s.label + ': ' + s.n + ' equipos</title>' +
+        '<rect x="' + (L + i * pw) + '" y="' + T + '" width="' + pw + '" height="' + (H - T - B) + '" fill="transparent"/>' +
+        (s.n ? '<rect class="b" x="' + x + '" y="' + y0 + '" width="' + bw + '" height="' + h + '" rx="3" fill="' + color + '"' + (sel ? ' stroke="var(--navy)" stroke-width="2"' : '') + '/>' : '') +
+        '<text x="' + (x + bw / 2) + '" y="' + (y0 - 6) + '" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)" font-family="Space Grotesk">' + (s.n || '') + '</text>' +
+        '<text x="' + (x + bw / 2) + '" y="' + (H - B + 16) + '" text-anchor="middle" font-size="10.5" fill="' + (sel ? 'var(--navy)' : '#5b6778') + '" font-weight="' + (sel ? 700 : 400) + '">' + (isNa ? 'N/D' : String(s.key).slice(2)) + '</text></g>';
+    });
+    svg += '<text x="' + (W / 2) + '" y="' + (H - 2) + '" text-anchor="middle" font-size="10" fill="#8890a0">Año de lanzamiento del modelo (’14 – ’25)</text></svg>';
+    document.getElementById('chart').innerHTML = svg;
+  }
+
+  /* ---------- Lectura ---------- */
+  var peak = series.filter(function(s){ return s.key !== 'na'; }).sort(function(a, b){ return b.n - a.n; })[0];
+  var peakModels = {};
+  D.forEach(function(d){ if (d.year === peak.key) peakModels[d.model] = (peakModels[d.model] || 0) + 1; });
+  var peakTop = Object.keys(peakModels).sort(function(a, b){ return peakModels[b] - peakModels[a]; })[0];
+  var recent = D.filter(function(d){ return d.year && d.year >= 2024; }).length;
+  var w10phys = onW10.filter(function(d){ return d.year; });
+
+  document.getElementById('concl').innerHTML =
+    '<li><b>' + pct(old5, known.length) + ' % con 5 o más años</b> (' + old5 + ' de ' + known.length + '): base para un plan de renovación.</li>' +
+    '<li><b>' + peak.key + ' es el pico</b> con ' + peak.n + ' equipos; solo ' + recent + ' son de 2024 o 2025.</li>' +
+    '<li><b>Windows 11:</b> ' + onW11 + ' equipos ya lo usan y ' + onW10.length + ' siguen en Windows 10.</li>' +
+    '<li class="w"><b>' + staleList.length + ' equipos</b> sin conectarse al dominio en más de ' + STALE_DAYS + ' días.</li>';
+
+  /* ---------- Tabla ---------- */
+  function w11Tag(s){
+    var cls = s === 'Actualizada' ? 'ok' : (s === 'Pendiente' ? 'warn2' : (s === 'Hardware Incompatible' ? 'bad' : ''));
+    return '<span class="tag ' + cls + '">' + esc(s) + '</span>';
+  }
+  function renderTable(){
+    var q = state.q.trim().toLowerCase();
+    var list = D.filter(function(d){
+      if (state.year === 'na' && d.year) return false;
+      if (state.year !== null && state.year !== 'na' && d.year !== state.year) return false;
+      if (q && (d.name + ' ' + d.model + ' ' + d.man).toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    }).sort(function(a, b){ return (a.year || 9999) - (b.year || 9999) || a.name.localeCompare(b.name); });
+    document.getElementById('tbody').innerHTML = list.map(function(d){
+      return '<tr><td class="name">' + esc(d.name) + '</td><td>' + esc(d.man || '—') + '</td><td>' + esc(d.model || '—') + '</td>' +
+        '<td>' + (d.year || '—') + '</td><td>' + esc(d.os) + '</td><td>' + w11Tag(d.w11) + '</td>' +
+        '<td' + (d.stale ? ' class="stale" title="Más de ' + STALE_DAYS + ' días sin conectarse"' : '') + '>' + esc(d.logon) + '</td><td>—</td></tr>';
+    }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--mut);padding:24px">Sin resultados.</td></tr>';
+    document.getElementById('count').textContent = 'Mostrando ' + list.length + ' de ' + total;
+    document.getElementById('chip').innerHTML = state.year === null ? '' :
+      '<span class="chip">' + (state.year === 'na' ? 'Sin dato' : 'Año ' + state.year) + '<button type="button" id="clr" aria-label="Quitar filtro">×</button></span>';
+    var clr = document.getElementById('clr');
+    if (clr) clr.addEventListener('click', function(){ state.year = null; render(); });
+  }
+
+  function render(){ renderChart(); renderTable(); }
+
+  document.getElementById('chart').addEventListener('click', function(e){
+    var g = e.target.closest ? e.target.closest('[data-key]') : null;
+    if (!g) return;
+    var k = g.getAttribute('data-key'); k = k === 'na' ? 'na' : Number(k);
+    state.year = state.year === k ? null : k;
+    render();
+  });
+  document.getElementById('q').addEventListener('input', function(e){ state.q = e.target.value; renderTable(); });
+
+  render();
+})();
+</script>
+
+</body>
+</html>

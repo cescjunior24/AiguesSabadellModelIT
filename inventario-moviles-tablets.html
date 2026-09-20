@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventario de Móviles y Tablets · Gestión de Dispositivos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16233f; --navy-2:#1d3157; --blue:#2f5fa8; --blue-soft:#eaf0fa;
+    --purple:#6a3f9e; --purple-soft:#f1e9fa;
+    --amber:#b5791f; --amber-bg:#fff6e9; --amber-line:#ecc98a; --amber-ink:#6e4711;
+    --ink:#1b2433; --mut:#5b6778; --line:#d7dee9; --bg:#f4f6fa; --card:#ffffff; --edge:#a9b7d1;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--ink);display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;gap:16px;padding:16px 28px;border-bottom:1px solid var(--line);background:var(--card);flex:none;}
+  .back-link{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--navy-2);text-decoration:none;padding:7px 12px;border:1px solid var(--line);border-radius:8px;flex:none;transition:border-color .15s,background .15s;}
+  .back-link:hover{border-color:var(--blue);background:var(--blue-soft);}
+  .back-link svg{width:15px;height:15px;stroke:currentColor;}
+  header{text-align:center;flex:1;min-width:0;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;margin:0 0 2px;color:var(--navy);letter-spacing:-0.01em;}
+  h1 .sep{color:#9aa6bb;font-weight:500;margin:0 8px;}
+  .subtitle{font-size:12.5px;color:var(--mut);margin:0;}
+  .topbar-spacer{width:126px;flex:none;}
+
+  .viewport{flex:1;min-height:0;overflow:auto;padding:28px 24px 48px;}
+  .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+  .panel{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:18px 20px 20px;}
+  .panel-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none;background:var(--blue-soft);}
+  .icon svg{width:18px;height:18px;stroke:var(--blue);}
+  .panel-title{font-family:'Space Grotesk',sans-serif;font-size:15.5px;font-weight:600;color:var(--navy);}
+  .panel-title .who{font-weight:400;color:var(--mut);font-size:13px;}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .kpi{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;}
+  .kpi.dark{background:linear-gradient(160deg,var(--navy),#0f1930);border-color:transparent;color:#fff;}
+  .kpi .v{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;line-height:1.1;}
+  .kpi .v small{font-size:14px;font-weight:600;color:var(--mut);margin-left:4px;}
+  .kpi .l{font-size:12.5px;font-weight:600;margin-top:4px;}
+  .kpi .s{font-size:11.5px;color:var(--mut);margin-top:2px;line-height:1.35;}
+  .kpi.dark .s{color:#cfe0ff;}
+  .split{display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:10px;background:#eef0f3;}
+  .split span{display:block;height:100%;}
+
+  .cols{display:grid;grid-template-columns:1.7fr 1fr;gap:18px;align-items:start;}
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;}
+
+  /* ===== MAPA DE CUADRADOS ===== */
+  .seg{margin-left:auto;display:flex;gap:2px;padding:3px;background:var(--bg);border:1px solid var(--line);border-radius:9px;flex-wrap:wrap;}
+  .seg button{font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;font-weight:600;color:var(--mut);background:transparent;border:0;border-radius:7px;padding:5px 11px;cursor:pointer;}
+  .seg button:hover{color:var(--navy-2);}
+  .seg button.on{background:var(--navy);color:#fff;}
+  .seglabel{font-size:11px;color:var(--mut);margin-left:auto;margin-right:-4px;}
+  .waffle svg{display:block;width:100%;height:auto;}
+  .c{transition:transform .8s cubic-bezier(.2,.8,.2,1),opacity .3s;cursor:default;}
+  .c rect{transition:fill .5s;}
+  .c:hover rect{stroke:var(--navy);stroke-width:2;}
+  .lgd{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .lg{display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:12px;font-weight:600;color:var(--navy-2);background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 9px;cursor:pointer;transition:border-color .15s,background .15s;}
+  .lg:hover{border-color:var(--blue);}
+  .lg.on{background:var(--blue-soft);border-color:var(--blue);}
+  .lg i{width:12px;height:12px;border-radius:4px;display:inline-block;}
+  .lg b{font-family:'Space Grotesk',sans-serif;color:var(--ink);}
+  .detail{margin-top:12px;padding:9px 12px;border-radius:9px;background:var(--bg);font-size:12.5px;color:var(--mut);min-height:38px;line-height:1.45;}
+  .detail b{color:var(--ink);font-family:'Space Grotesk',sans-serif;}
+  .key{font-size:11.5px;color:var(--mut);margin-top:8px;display:flex;align-items:center;gap:6px;}
+  .key i{display:inline-block;width:14px;height:14px;border-radius:4px;background:#b7c1d4;position:relative;}
+  .key i::after{content:"";position:absolute;left:5px;top:5px;width:4px;height:4px;border-radius:50%;background:#fff;}
+
+  .concl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .concl li{font-size:13px;line-height:1.5;color:var(--mut);padding-left:16px;position:relative;}
+  .concl li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:2px;background:var(--blue);}
+  .concl li.w::before{background:var(--amber);}
+  .concl b{color:var(--ink);}
+  .warn{margin-top:14px;background:var(--amber-bg);border:1px solid var(--amber-line);color:var(--amber-ink);border-radius:9px;padding:10px 12px;font-size:12px;line-height:1.45;}
+
+  .chart svg{display:block;width:100%;height:auto;}
+  .bar{cursor:pointer;}
+  .bar:hover .b{opacity:.85;}
+  .hint{font-size:11.5px;color:var(--mut);margin-top:6px;}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;font-size:11.5px;color:var(--mut);align-items:center;}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+
+  .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px;}
+  .tools input{font:inherit;font-size:13px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;min-width:260px;background:#fff;color:var(--ink);}
+  .tools input:focus{outline:2px solid var(--blue);outline-offset:-1px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--blue-soft);color:var(--navy-2);font-size:12px;font-weight:600;padding:5px 6px 5px 11px;border-radius:999px;}
+  .chip button{border:0;background:var(--blue);color:#fff;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:11px;line-height:1;}
+  .count{margin-left:auto;font-size:12px;color:var(--mut);}
+  .tbl{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:10px;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{position:sticky;top:0;background:#f8f9fc;text-align:left;font-size:10.5px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  td{padding:8px 12px;border-bottom:1px solid #edf0f5;white-space:nowrap;}
+  tr:last-child td{border-bottom:0;}
+  td.user{font-family:'Space Grotesk',sans-serif;font-weight:600;}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:#eef0f3;color:var(--mut);}
+  .tag.and{background:var(--blue-soft);color:var(--navy-2);}
+  .tag.ios{background:var(--purple-soft);color:var(--purple);}
+  .tag.ok{background:#e3f4ef;color:#1f7a63;}
+  .tag.warn2{background:var(--amber-bg);color:var(--amber-ink);}
+  .tag.bad{background:#fdecec;color:#a33a3a;}
+  .stale{color:var(--amber-ink);font-weight:600;}
+
+  @media (prefers-reduced-motion: reduce){ .c,.c rect{transition:none;} }
+  @media (max-width:900px){
+    .kpis{grid-template-columns:repeat(2,1fr);}
+    .cols,.cols2{grid-template-columns:1fr;}
+    .topbar{padding:12px 14px;} .topbar-spacer{display:none;} h1{font-size:17px;}
+    .viewport{padding:18px 16px 40px;}
+    .seg,.seglabel{margin-left:0;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back-link" href="modelo-prestacion-servicio-it.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Volver al modelo
+  </a>
+  <header>
+    <h1>Inventario de Móviles y Tablets<span class="sep">|</span>Gestión de Dispositivos</h1>
+    <p class="subtitle">Export de Workspace One y Google MDM del 19 de septiembre de 2026 · año de lanzamiento estimado por modelo.</p>
+  </header>
+  <div class="topbar-spacer"></div>
+</div>
+
+<div class="viewport">
+  <div class="wrap">
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="cols">
+      <div class="panel waffle">
+        <div class="panel-head">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+          <div class="panel-title">FLOTA <span class="who">| Un cuadrado por dispositivo</span></div>
+          <span class="seglabel">Colorear por</span>
+          <div class="seg" id="seg"></div>
+        </div>
+        <div id="waffle"></div>
+        <div class="lgd" id="lgd"></div>
+        <div class="detail" id="detail"></div>
+        <div class="key"><i></i> Un punto blanco indica que el dispositivo es una tablet.</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="icon" style="background:var(--purple-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+          <div class="panel-title">LECTURA <span class="who">| Qué nos dice</span></div>
+        </div>
+        <ul class="concl" id="concl"></ul>
+        <div class="warn" id="warn"></div>
+      </div>
+    </div>
+
+    <div class="cols2">
+      <div class="panel chart">
+        <div class="panel-head">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 17V11M13 17V7M18 17v-4"/></svg></div>
+          <div class="panel-title">POR AÑO <span class="who">| Lanzamiento del modelo</span></div>
+        </div>
+        <div id="years"></div>
+        <div class="legend">
+          <span><i style="background:var(--blue)"></i>Android</span>
+          <span><i style="background:var(--purple)"></i>iOS</span>
+        </div>
+        <p class="hint">Pulsa una barra para filtrar la tabla.</p>
+      </div>
+      <div class="panel chart">
+        <div class="panel-head">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+          <div class="panel-title">MODELOS <span class="who">| Los más habituales</span></div>
+        </div>
+        <div id="models"></div>
+        <p class="hint">Pulsa un modelo para filtrar la tabla.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
+        <div class="panel-title">LISTADO <span class="who">| Todos los dispositivos</span></div>
+      </div>
+      <div class="tools">
+        <input id="q" type="search" placeholder="Buscar por usuario, modelo o sociedad…" aria-label="Buscar">
+        <span id="chip"></span>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Usuario</th><th>Dispositivo</th><th>Sistema</th><th>Tipo</th><th>Año</th><th>Gestión</th><th>Sociedad</th><th>Último acceso</th><th>Estado</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  // [usuario, modelo, SO, tipo, año estimado del modelo, gestión, sociedad, alta, último acceso,
+  //  AD deshabilitado, Google suspendido, nº de serie repetido, tiene IMEI, tiene teléfono]
+  var RAW = [["abdennabi.dahsas@cassa.es","Galaxy A32 5G","Android","movil",2021,"Workspace One","Aigües de Sabadell","2022-03-04","2026-09-17",0,0,0,1,1],["abdennabi.dahsas@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-09-02","2026-09-17",0,0,0,1,1],["abigail.fernandez.ext@cassa.es","Galaxy A35 5G","Android","movil",2024,"Google MDM","Otras empresas","2025-02-10","2026-09-18",0,0,0,0,0],["adam.rivera@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2025-12-11","2026-09-17",0,0,0,1,1],["aida.calderon@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","CASSA Aigües i Depuració","2023-10-06","2026-09-17",0,0,0,0,0],["aitor.jaime@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2022-03-17","2026-07-29",0,0,0,1,0],["aitor.jaime@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2025-01-22","2026-09-14",0,0,0,1,0],["aitor.jaime@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-07-23","2026-09-17",0,0,0,1,1],["albert.fontan@cassa.es","Galaxy A50","Android","movil",2019,"Google MDM","Aigües de Sabadell","2024-12-20","2026-09-18",0,0,0,1,0],["albert.guardia@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-07-28","2026-09-17",0,0,0,1,0],["albert.guardia@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-08-19","2026-09-17",0,0,0,1,1],["albert.mesa@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2021-03-11","2026-09-17",0,0,0,1,0],["albert.mesa@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-09-08","2026-09-17",0,0,0,1,0],["albert.serrano@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","SOCADE","2026-04-23","2026-09-16",0,0,0,1,0],["alberto.arroyo@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","Aigües de Sabadell","2021-07-02","2026-09-16",0,0,0,1,0],["alejandro.fernandez@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2026-05-26","2026-09-17",0,0,0,1,0],["alejandro.fernandez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-05-28","2026-09-17",0,0,0,1,1],["alejandro.ferreyra@cassa.es","Galaxy S24","Android","movil",2024,"Google MDM","Aigües de Sabadell","2025-07-12","2026-06-23",1,1,0,0,0],["alejandro.ferreyra@cassa.es","Galaxy A50","Android","movil",2019,"Google MDM","Aigües de Sabadell","2025-07-22","2026-06-10",1,1,0,1,0],["alejandro.ferreyra@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2025-10-09","2026-06-26",1,1,0,1,1],["alejandro.morales@cassa.es","Galaxy A12","Android","movil",2020,"Google MDM","CASSA Aigües i Depuració","2023-09-27","2026-09-03",0,0,0,0,0],["alejandro.morales@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","CASSA Aigües i Depuració","2026-08-31","2026-09-18",0,0,0,0,0],["almane.diallo@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2024-05-07","2026-09-17",0,0,0,1,0],["amanda.garcia-caralt@cassa.es","Galaxy A23 5G","Android","movil",2022,"Google MDM","SOCADE","2024-05-02","2026-09-18",0,0,0,1,0],["ana-belen.duque@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2023-08-31","2026-08-31",0,0,0,0,0],["ana-belen.duque@cassa.es","Honor/Huawei HEY2-W09","Android","tablet",null,"Google MDM","Aigües de Sabadell","2026-02-19","2026-09-17",0,0,0,0,0],["ana-belen.duque@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-07-01","2026-09-18",0,0,0,0,0],["andres.rodriguez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-01-15","2026-09-18",0,0,0,0,0],["angel.lopez-sepulveda@cassa.es","Galaxy A53 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2024-07-29","2026-09-17",0,0,0,1,1],["anna.bolano@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2025-05-06","2026-09-18",0,0,0,0,0],["anna.nunez@cassa.es","Galaxy A20e","Android","movil",2019,"Google MDM","Aigües de Sabadell","2023-10-27","2026-09-18",0,0,0,1,0],["anna.torregrosa@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2025-12-09","2026-09-16",0,0,0,1,0],["antonio.izquierdo@cassa.es","iPhone 14","iOS","movil",2022,"Google MDM","Aigües de Sabadell","2026-05-28","2026-09-18",0,0,0,1,0],["antonio.porras@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-11-13","2026-09-06",0,0,0,1,0],["antonio.raja@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-07-24","2026-09-16",0,0,0,1,1],["antonio.sanchez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-06-05","2026-07-31",0,0,1,1,1],["antonio.sanchez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-08-03","2026-09-17",0,0,1,1,1],["antonio.sanchez-martinez@cassa.es","Galaxy A52s 5G","Android","movil",2021,"Workspace One","Aigües de Sabadell","2023-12-12","2026-09-17",0,0,0,1,1],["arnau.salmons@cassa.es","Galaxy A10","Android","movil",2019,"Google MDM","Aigües de Sabadell","2025-09-15","2026-09-18",0,0,0,1,0],["ayron.fernandez@cassa.es","Galaxy A12","Android","movil",2020,"Google MDM","Aigües de Sabadell","2025-10-09","2026-09-03",0,0,0,0,0],["ayron.fernandez@cassa.es","Xiaomi 23090RA98G","Android","movil",null,"Google MDM","Aigües de Sabadell","2026-04-27","2026-09-16",0,0,0,0,0],["ayron.fernandez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-08-26","2026-09-18",0,0,0,0,0],["bernardo-miguel.yglesias@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2024-02-01","2026-09-13",0,0,0,1,0],["bernardo-miguel.yglesias@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","CASSA Aigües i Depuració","2026-02-09","2026-09-16",0,0,0,0,0],["carlos.jimenes.ext@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","Otras empresas","2023-08-07","2026-09-17",0,0,0,1,0],["carlos.linares@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-02-09","2026-09-18",0,0,0,0,0],["carlos.tur@cassa.es","iPhone 13","iOS","movil",2021,"Google MDM","Aigües de Sabadell","2023-09-26","2026-06-30",0,0,0,1,0],["carlota.veas@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","CASSA Aigües i Depuració","2023-09-21","2026-07-01",0,0,0,1,0],["carlota.veas@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","CASSA Aigües i Depuració","2026-06-29","2026-09-18",0,0,0,0,0],["carolina.quintana@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2023-10-02","2026-09-18",0,0,0,1,0],["cristian.fernandez-naranjo@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-06-09","2026-09-17",0,0,0,1,1],["cristian.hidalgo@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-04-27","2026-09-17",0,0,0,1,1],["cristian.hidalgo@cassa.es","iPad (A16)","iOS","tablet",2025,"Workspace One","Aigües de Sabadell","2026-04-29","2026-09-17",0,0,0,1,0],["cristina.fabregas@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2023-09-20","2026-09-18",0,0,0,0,0],["cristina.mudarra@cassa.es","OPPO CPH2637","Android","movil",null,"Google MDM","Aigües de Sabadell","2026-05-30","2026-09-18",0,0,0,0,0],["daniel.gutierrez@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","SOCADE","2023-08-30","2026-09-18",0,0,0,0,0],["daniel.hermosin@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","Aigües de Sabadell","2026-03-26","2026-09-17",0,0,0,1,0],["daniel.hermosin@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-04-20","2026-09-16",0,0,0,0,0],["daniel.jimeno@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","CASSA Aigües i Depuració","2023-09-13","2026-09-18",0,0,0,0,0],["daniel.rodriguez@cassa.es","iPhone 11","iOS","movil",2019,"Google MDM","Aigües de Sabadell","2026-06-04","2026-07-30",0,0,0,1,0],["demetrio.maestre@cassa.es","Galaxy A33 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2026-06-08","2026-08-31",0,0,1,1,1],["demetrio.maestre@cassa.es","Galaxy A33 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2026-08-31","2026-09-17",0,0,1,1,1],["diego.hernandez-munoz@cassa.es","Galaxy A52s 5G","Android","movil",2021,"Workspace One","Aigües de Sabadell","2022-08-03","2026-08-05",0,0,0,1,0],["diego.hernandez-munoz@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-08-05","2026-09-18",0,0,0,0,0],["elisabeth.santacruz@cassa.es","iPhone SE (3.ª gen)","iOS","movil",2022,"Workspace One","Aigües de Sabadell","2022-09-14","2026-09-17",0,0,0,1,1],["emili.galimany@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-10-25","2026-09-17",0,0,0,1,0],["emili.galimany@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-05-20","2026-09-17",0,0,0,1,1],["encarna.fernandez@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2025-01-16","2026-09-18",0,0,0,0,0],["enric.sans@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","SOCADE","2026-01-23","2026-09-18",0,0,0,1,0],["eric.santos@cetaqua.com","Galaxy A32 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2023-09-21","2026-09-18",0,0,0,0,0],["eric.santos@cetaqua.com","iPhone 15 Pro","iOS","movil",2023,"Google MDM","Aigües de Sabadell","2024-06-04","2026-09-18",0,0,0,1,0],["eric.santos@cetaqua.com","iPad 10.ª gen","iOS","tablet",2022,"Google MDM","Aigües de Sabadell","2024-12-29","2026-09-18",0,0,0,0,0],["esteban.reino@cassa.es","Galaxy A53 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2024-01-11","2026-09-17",0,0,0,1,1],["esther.mendez@cassa.es","Galaxy A52s 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2023-09-27","2026-09-18",0,0,0,0,0],["eugenio.carrascal@cassa.es","realme RMX5131","Android","movil",null,"Google MDM","CASSA Aigües i Depuració","2026-06-17","2026-07-08",0,0,0,0,0],["eugenio.carrascal@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","CASSA Aigües i Depuració","2026-06-26","2026-09-18",0,0,0,0,0],["eugenio.carrascal@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Google MDM","CASSA Aigües i Depuració","2026-07-13","2026-08-21",0,0,0,1,0],["eva.bosch@cassa.es","Galaxy A25 5G","Android","movil",2023,"Google MDM","Aigües de Sabadell","2025-02-17","2026-09-18",0,0,0,0,0],["eva.de-oleza@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2023-09-25","2026-02-12",0,0,0,0,0],["eva.de-oleza@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","CASSA Aigües i Depuració","2026-02-11","2026-09-16",0,0,0,0,0],["fanel.corcoveanu@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-04-24","2026-09-17",0,0,0,1,1],["fanel.corcoveanu@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2026-04-24","2026-09-17",0,0,0,1,0],["fausto-ramiro.gavilanez@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2025-01-31","2026-09-18",0,0,0,0,0],["felipe.tejeda@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-10-05","2026-09-17",0,0,0,1,0],["felipe.tejeda@cassa.es","OPPO CPH2185","Android","movil",null,"Google MDM","CASSA Aigües i Depuració","2026-05-04","2026-05-12",0,0,0,1,0],["felipe.tejeda@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-06-08","2026-09-17",0,0,0,1,1],["felix.molino@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","Aigües de Sabadell","2021-02-08","2026-09-17",0,0,0,1,0],["felix.molino-mochon@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2025-01-15","2026-06-11",0,0,0,0,0],["felix.molino-mochon@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2025-03-05","2026-09-07",0,0,0,1,0],["felix.molino-mochon@cassa.es","Galaxy A33 5G","Android","movil",2022,"Workspace One","CASSA Aigües i Depuració","2026-06-17","2026-09-17",0,0,0,1,1],["francesc.colome@cassa.es","Galaxy A25 5G","Android","movil",2023,"Google MDM","CASSA Aigües i Depuració","2025-01-14","2026-09-18",1,1,0,0,0],["francesc.colome@cassa.es","iPad 7.ª gen","iOS","tablet",2019,"Workspace One","CASSA Aigües i Depuració","2025-06-06","2026-05-28",1,1,0,1,0],["francesc.gallego@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2025-08-08","2026-09-17",0,0,0,0,0],["francesc.sostres@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2024-09-05","2026-09-17",0,0,0,1,0],["francesc.sostres@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2025-01-22","2026-09-17",0,0,0,1,0],["francesca.manrique@cassa.es","Galaxy A25 5G","Android","movil",2023,"Google MDM","Aigües de Sabadell","2024-12-19","2026-09-18",0,0,0,0,0],["francesc-xavier.esteve@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","CASSA Aigües i Depuració","2023-09-13","2026-09-18",0,0,0,0,0],["francisco.serrano@cassa.es","Galaxy A23 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2024-04-03","2026-09-17",0,0,0,1,1],["francisco-javier.lopez@cassa.es","Xiaomi 2311DRK48G","Android","movil",null,"Google MDM","Aigües de Sabadell","2024-12-03","2026-09-18",0,0,0,0,0],["francisco-javier.lopez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-01-15","2026-08-20",0,0,0,0,0],["gabriel.martinez@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2021-03-18","2026-08-17",0,0,0,1,0],["gabriel.martinez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-07-22","2026-09-17",0,0,0,1,1],["gemma.esteban@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2023-10-01","2026-09-18",0,0,0,1,0],["genaro.padial@cassa.es","POCO X3 Pro","Android","movil",2021,"Google MDM","Aigües de Sabadell","2026-06-02","2026-09-18",0,0,0,0,0],["harpreet.singh@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-07-30","2026-09-17",0,0,0,1,1],["hassane.alili@cassa.es","Galaxy A23 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2024-04-03","2026-09-17",0,0,0,1,1],["hassane.alili@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-08-14","2026-08-19",0,0,0,1,1],["ignasi.canalias@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","SOCADE","2026-02-11","2026-09-18",0,0,0,1,0],["imma.tenorio@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","SOCADE","2023-12-01","2026-09-18",0,0,0,1,0],["irene.vela@cassa.es","Galaxy A10","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2023-05-05","2026-09-05",0,0,0,1,0],["isabel.ferrero@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2023-10-13","2026-09-18",0,0,0,0,0],["ismail.ben@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-03-09","2026-09-16",0,0,0,1,1],["issaka.traore@cassa.es","Galaxy A23 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2024-04-03","2026-09-17",0,0,0,1,1],["ivan.gamis@cassa.es","Galaxy A52 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2024-11-26","2026-09-17",0,0,0,0,0],["ivan.garcia@cassa.es","Galaxy S20 FE","Android","movil",2020,"Google MDM","CASSA Aigües i Depuració","2023-09-07","2026-09-16",0,0,0,0,0],["ivan.garriga@cassa.es","Galaxy A23 5G","Android","movil",2022,"Google MDM","Aigües de Sabadell","2025-02-03","2026-05-29",0,0,0,0,0],["ivan.garriga@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","Aigües de Sabadell","2026-01-23","2026-09-17",0,0,0,1,0],["ivan.garriga@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-06-02","2026-09-17",0,0,0,1,1],["ivan.las@cassa.es","Galaxy A52s 5G","Android","movil",2021,"Workspace One","CASSA Aigües i Depuració","2022-11-15","2026-09-17",0,0,0,1,1],["ivan.las@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2024-10-31","2026-09-17",0,0,0,1,0],["j.serra@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","Aigües de Sabadell","2023-11-06","2026-09-18",0,0,0,0,0],["jan-kazimierz.piotrowski@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","Aigües de Sabadell","2024-07-26","2026-09-17",0,0,0,1,0],["javier.berjaga.ext@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","Otras empresas","2026-03-20","2026-09-17",0,0,0,1,0],["javier.pareja@cassa.es","Galaxy S10e","Android","movil",2019,"Google MDM","Aigües de Sabadell","2025-12-18","2026-01-04",0,0,0,0,0],["javier.pareja@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-01-03","2026-09-18",0,0,0,0,0],["javier.perez-plaza@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","CASSA Aigües i Depuració","2025-03-12","2026-09-18",0,0,0,0,0],["jesus.biel@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2023-10-24","2026-09-18",0,0,0,0,0],["jesus.garcia@cassa.es","iPad 8.ª gen","iOS","tablet",2020,"Workspace One","Aigües de Sabadell","2023-06-16","2026-09-14",0,0,0,1,0],["jesus.garcia@cassa.es","Galaxy A25 5G","Android","movil",2023,"Google MDM","Aigües de Sabadell","2025-02-17","2026-09-18",0,0,0,0,0],["jesus.llarden.ext@cassa.es","Galaxy Tab Active4 Pro","Android","tablet",2022,"Google MDM","Otras empresas","2026-08-03","2026-09-17",0,0,0,0,0],["jesus.llarden.ext@cassa.es","Tablet KINGKONG","Android","tablet",null,"Google MDM","Otras empresas","2026-09-09","2026-09-16",0,0,0,0,0],["joan.borras@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2025-10-09","2026-09-17",0,0,0,1,1],["john.milligan@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2024-01-03","2026-09-16",0,0,0,0,0],["john.milligan@cassa.es","iPad (A16)","iOS","tablet",2025,"Google MDM","CASSA Aigües i Depuració","2026-01-22","2026-06-28",0,0,0,1,0],["jordi.duran@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2023-03-23","2026-09-17",0,0,0,1,0],["jordi.duran@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-10-25","2026-09-17",0,0,0,1,0],["jordi.gabernet@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","SOCADE","2023-12-14","2026-09-17",0,0,0,1,0],["jordi.gabernet@cassa.es","iPad 6.ª gen","iOS","tablet",2018,"Workspace One","SOCADE","2024-09-26","2026-09-14",0,0,0,1,0],["jordi.membrado@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2023-09-07","2026-09-18",0,0,0,0,0],["jordi.meya@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2022-10-18","2026-09-04",0,0,0,1,0],["jordi.meya@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-10-24","2026-09-17",0,0,0,1,0],["jordi.meya@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-07-29","2026-09-17",0,0,0,1,1],["jordi.valero@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2021-03-17","2026-09-10",0,0,0,1,0],["jordi.vidal@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2021-03-15","2026-09-17",0,0,0,1,0],["jordi.vidal@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-09-08","2026-09-17",0,0,0,1,0],["jose.batalle@cassa.es","Galaxy A53 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2023-10-19","2026-09-17",0,0,0,1,1],["jose.batalle@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","Aigües de Sabadell","2024-08-05","2026-09-17",0,0,0,1,0],["jose.munoz@cassa.es","iPad (A16)","iOS","tablet",2025,"Workspace One","Aigües de Sabadell","2026-04-27","2026-09-17",0,0,0,1,0],["jose.munoz@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-05-04","2026-09-17",0,0,0,1,1],["jose.vizoso@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-07-24","2026-09-17",0,0,0,1,1],["jose-antonio.alarcon@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2025-05-07","2026-09-18",0,0,0,0,0],["jose-antonio.mateos@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","Aigües de Sabadell","2024-07-05","2026-09-17",0,0,0,1,0],["jose-antonio.mateos@cassa.es","Galaxy A53 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2024-11-06","2026-09-17",0,0,0,1,1],["jose-antonio.munoz@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-01-15","2026-06-30",0,0,0,0,0],["jose-antonio.munoz@cassa.es","Xiaomi 24090RA29G","Android","movil",null,"Google MDM","Aigües de Sabadell","2026-01-16","2026-09-18",0,0,0,0,0],["jose-luis.ortega@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","CASSA Aigües i Depuració","2023-09-20","2026-09-18",0,0,0,1,0],["jose-manuel.manas@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","Aigües de Sabadell","2023-09-13","2026-09-18",0,0,0,1,0],["josep-maria.comas@cassa.es","iPhone SE (2.ª gen)","iOS","movil",2020,"Workspace One","Aigües de Sabadell","2023-03-07","2026-09-17",0,0,0,1,1],["josep-maria.estruch@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","Aigües de Sabadell","2023-09-27","2026-09-18",0,0,0,1,0],["josep-ramon.elias@cassa.es","Galaxy A52 5G","Android","movil",2021,"Workspace One","CASSA Aigües i Depuració","2022-02-01","2026-06-11",0,0,0,1,0],["josep-ramon.elias@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-09-20","2026-09-17",0,0,0,1,0],["juan.armenteros@cassa.es","Galaxy A52 5G","Android","movil",2021,"Workspace One","Aigües de Sabadell","2024-08-29","2026-09-17",0,0,0,1,1],["juan.caralps@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2025-10-08","2026-09-15",0,0,0,1,0],["juan.caralps@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2025-10-09","2026-09-17",0,0,0,1,1],["juan.perez@cassa.es","Galaxy A12","Android","movil",2020,"Google MDM","SOCADE","2023-08-30","2026-09-16",0,0,0,0,0],["juan.rey@cassa.es","Android (sin modelo)","Android","movil",null,"Google MDM","Aigües de Sabadell","2026-01-20","2026-09-16",0,0,0,0,0],["juan-andres.ayala@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","Aigües de Sabadell","2023-10-19","2026-09-17",0,0,0,1,0],["julio-andres.maldonado@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-03-06","2026-09-18",0,0,0,0,0],["laia.montala@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","CASSA Aigües i Depuració","2025-12-18","2026-09-16",0,0,0,0,0],["laila.aaidoun@cassa.es","iPhone 15","iOS","movil",2023,"Google MDM","Aigües de Sabadell","2026-08-17","2026-09-18",0,0,0,1,0],["lhoussain.oukhouyaali@cassa.es","Galaxy A23 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2024-07-29","2026-09-17",0,0,0,1,1],["lluis.gomez@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","Aigües de Sabadell","2023-04-14","2026-09-17",0,0,0,1,0],["lluis.gomez@cassa.es","Galaxy A25 5G","Android","movil",2023,"Google MDM","Aigües de Sabadell","2024-11-29","2026-09-18",0,0,0,0,0],["lluis.jordan@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-04-21","2026-09-16",0,0,0,0,0],["luis.ceballos.ext@veolia.com","Galaxy A50","Android","movil",2019,"Workspace One","Otras empresas","2026-01-29","2026-09-17",0,1,0,1,0],["manel.sanchez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-07-27","2026-09-17",0,0,0,1,1],["manuel.jimenez@cassa.es","Galaxy A53 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2023-12-21","2026-09-17",0,0,0,1,1],["marcel.balart@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-03-06","2026-09-18",0,0,0,0,0],["margarida.antonell@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2025-06-12","2026-09-18",0,0,0,0,0],["maria.galan@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","CASSA Aigües i Depuració","2025-12-15","2026-09-18",0,0,0,0,0],["maria-angeles.campos@cassa.es","Galaxy A25 5G","Android","movil",2023,"Google MDM","Aigües de Sabadell","2025-02-10","2026-09-16",0,0,0,0,0],["maria-jose.ruiz@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2024-01-08","2026-09-17",0,0,0,0,0],["maria-montserrat.ruiz-badell@cassa.es","Galaxy S20 FE","Android","movil",2020,"Google MDM","CASSA Aigües i Depuració","2023-09-27","2026-09-18",0,0,0,0,0],["marissa.chico@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2023-10-16","2026-09-18",0,0,0,0,0],["martina.sacristan@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","Aigües de Sabadell","2023-11-28","2026-09-18",0,0,0,0,0],["miguel-angel.fernandez@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","Aigües de Sabadell","2025-03-06","2026-09-17",0,0,0,1,0],["miquel.manosa@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2023-08-30","2026-09-18",0,0,0,0,0],["mireia.guillen@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","CASSA Aigües i Depuració","2026-03-30","2026-09-17",0,0,0,0,0],["miriam.dinares@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","Aigües de Sabadell","2023-10-11","2026-09-18",0,0,0,0,0],["miriam.olivan@cassa.es","Galaxy A23 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2026-04-27","2026-09-18",0,0,0,0,0],["mohamed.chennirou@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","SOCADE","2026-03-19","2026-09-16",0,0,0,0,0],["montserrat.fernandez@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2023-10-24","2026-05-25",0,0,0,1,0],["mostafa.ghailan@cassa.es","realme RMX3910","Android","movil",null,"Google MDM","Aigües de Sabadell","2026-01-13","2026-05-13",0,0,0,0,0],["mourad.khelifi@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2025-09-18","2026-09-17",0,0,0,1,1],["nicolas.garcia@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2025-12-17","2026-09-16",0,0,0,0,0],["nicolas.garcia@cassa.es","Android (sin modelo)","Android","movil",null,"Google MDM","Aigües de Sabadell","2026-04-10","2026-07-20",0,0,0,0,0],["nicolas.garcia@cassa.es","Xiaomi 23124RA7EO","Android","movil",null,"Google MDM","Aigües de Sabadell","2026-06-16","2026-06-16",0,0,0,0,0],["nuria.jimenez@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2023-09-28","2026-09-16",0,0,0,0,0],["oriol.borrero@cassa.es","Galaxy A52 5G","Android","movil",2021,"Workspace One","Aigües de Sabadell","2021-05-07","2026-09-10",0,0,0,1,1],["oscar.gomez@cassa.es","iPhone SE (3.ª gen)","iOS","movil",2022,"Workspace One","Aigües de Sabadell","2022-04-29","2026-09-17",0,0,0,1,1],["oscar.prieto@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2022-03-31","2026-07-26",0,0,0,1,0],["oscar.prieto@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-11-15","2026-09-17",0,0,0,1,0],["oscar.prieto@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","CASSA Aigües i Depuració","2026-07-23","2026-09-17",0,0,0,1,1],["oscar.serra@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","Aigües de Sabadell","2023-07-21","2026-07-27",0,0,0,1,0],["oscar.serra@cassa.es","Galaxy A25 5G","Android","movil",2023,"Google MDM","Aigües de Sabadell","2025-02-13","2026-09-18",0,0,0,0,0],["pablo.perez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-05-25","2026-07-17",0,0,0,1,0],["pablo.perez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-07-21","2026-09-18",0,0,0,0,0],["pablo-javier.quiroga@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2025-07-21","2026-09-17",0,0,0,1,0],["pablo-javier.quiroga@cassa.es","Mi 10 Lite 5G","Android","movil",2020,"Google MDM","CASSA Aigües i Depuració","2025-07-29","2026-09-17",0,0,0,0,0],["pablo-javier.quiroga@cassa.es","Galaxy A34 5G","Android","movil",2023,"Workspace One","CASSA Aigües i Depuració","2025-07-30","2026-09-17",0,0,0,1,1],["patricia.garcia@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2023-10-16","2026-09-18",0,0,0,0,0],["patricia.padros@cassa.es","Galaxy A12","Android","movil",2020,"Google MDM","SOCADE","2023-09-07","2026-09-18",0,0,0,0,0],["pere.serra.ext@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","Otras empresas","2025-12-12","2026-09-17",0,1,0,1,0],["pol.sanchez@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","Aigües de Sabadell","2023-12-13","2026-09-17",0,0,0,1,0],["pol.sanchez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-07-02","2026-09-17",0,0,0,1,1],["ramon.alemany@cassa.es","Galaxy A53 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2023-10-23","2026-09-17",0,0,0,1,1],["ramon.alemany@cassa.es","Pixel 10","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-05-19","2026-08-08",0,0,0,0,0],["ramon.alemany@cassa.es","Redmi Note 10 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2026-08-11","2026-09-17",0,0,0,0,0],["raul.gonzalez@cassa.es","realme RMX3867","Android","movil",null,"Google MDM","Aigües de Sabadell","2025-11-27","2026-05-25",0,0,0,0,0],["raul.gonzalez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2025-12-17","2026-09-18",0,0,0,0,0],["raul.monforte@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","Aigües de Sabadell","2023-09-27","2026-09-18",0,0,0,0,0],["robert.amposta@cassa.es","Galaxy A52s 5G","Android","movil",2021,"Workspace One","CASSA Aigües i Depuració","2022-09-28","2026-09-17",0,0,0,1,1],["robert.amposta@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2023-09-08","2026-08-01",0,0,0,1,0],["roberto.ordas@cassa.es","Galaxy A34 5G","Android","movil",2023,"Google MDM","Aigües de Sabadell","2024-11-17","2026-09-18",0,0,0,0,0],["roger.miranda@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","CASSA Aigües i Depuració","2026-04-24","2026-09-16",0,0,0,0,0],["roman.castillo@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2025-11-17","2026-09-16",0,0,0,0,0],["roser.justicia@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","SOCADE","2026-07-15","2026-09-18",0,0,0,1,0],["ruben.facerias@cassa.es","Galaxy A32 5G","Android","movil",2021,"Google MDM","CASSA Aigües i Depuració","2023-09-18","2026-09-18",0,0,0,0,0],["ruben.ortega@cassa.es","Galaxy A32 5G","Android","movil",2021,"Workspace One","CASSA Aigües i Depuració","2023-03-22","2026-09-17",0,0,0,1,1],["ruben.ortega@cassa.es","iPad 9.ª gen","iOS","tablet",2021,"Workspace One","CASSA Aigües i Depuració","2025-01-22","2026-09-17",0,0,0,1,0],["ruben.verdejo@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2025-12-11","2026-09-17",0,0,0,1,1],["saber.el-jetti@cassa.es","Xiaomi 23124RA7EO","Android","movil",null,"Google MDM","Aigües de Sabadell","2025-09-22","2026-09-17",0,0,0,0,0],["sara-maria.llovera@cassa.es","Galaxy A33 5G","Android","movil",2022,"Google MDM","CASSA Aigües i Depuració","2023-10-05","2026-09-18",0,0,0,0,0],["secundino.vallespi@cassa.es","Galaxy A50","Android","movil",2019,"Workspace One","CASSA Aigües i Depuració","2021-03-22","2026-09-17",0,0,0,1,0],["sergio.perez@cassa.es","Galaxy A32 5G","Android","movil",2021,"Workspace One","CASSA Aigües i Depuració","2022-12-01","2026-09-17",0,0,0,1,1],["slawomir.dziedzic@cassa.es","Galaxy A53 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2023-10-30","2026-06-29",0,0,1,1,1],["slawomir.dziedzic@cassa.es","Galaxy A53 5G","Android","movil",2022,"Workspace One","Aigües de Sabadell","2026-08-03","2026-09-17",0,0,1,1,1],["slawomir.dziedzic@cassa.es","Galaxy A26 5G","Android","movil",2025,"Workspace One","Aigües de Sabadell","2026-09-17","2026-09-17",0,0,0,1,1],["sofia.sanchoyerto@cassa.es","Galaxy A20e","Android","movil",2019,"Google MDM","CASSA Aigües i Depuració","2026-06-03","2026-09-17",0,0,0,1,0],["sonia.pardo@cassa.es","Galaxy A12","Android","movil",2020,"Google MDM","Aigües de Sabadell","2023-08-30","2026-09-18",0,0,0,0,0],["sonia.pardo@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2025-03-19","2026-09-18",0,0,0,0,0],["tyrone.lopez@cassa.es","Galaxy A25 5G","Android","movil",2023,"Google MDM","SOCADE","2024-12-10","2026-09-18",0,0,0,0,0],["victor.benitez@cassa.es","Galaxy A52s 5G","Android","movil",2021,"Workspace One","Aigües de Sabadell","2023-03-08","2026-06-03",0,0,0,1,0],["victor.benitez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2026-06-05","2026-08-31",0,0,0,1,0],["victor.gonzalez@cassa.es","Galaxy A26 5G","Android","movil",2025,"Google MDM","Aigües de Sabadell","2025-12-17","2026-09-18",0,0,0,0,0],["yolanda.titos@cassa.es","Galaxy A23 5G","Android","movil",2022,"Google MDM","Aigües de Sabadell","2024-04-03","2026-09-18",0,0,0,0,0]];
+  var REF = new Date('2026-09-19T00:00:00Z'); // fecha del export
+  var STALE_DAYS = 30;
+
+  var D = RAW.map(function(r, i){
+    var d = { i:i, user:r[0], model:r[1], os:r[2], tipo:r[3], year:r[4], src:r[5], comp:r[6], first:r[7], last:r[8],
+              dis:!!r[9], susp:!!r[10], dup:!!r[11], imei:!!r[12], tel:!!r[13] };
+    d.days = Math.floor((REF - new Date(d.last + 'T00:00:00Z')) / 864e5);
+    d.estado = (d.dis || d.susp) ? 'baja' : (d.days > STALE_DAYS ? 'inactivo' : 'activo');
+    d.age = !d.year ? 'na' : d.year <= 2020 ? 'a' : d.year <= 2022 ? 'b' : d.year <= 2024 ? 'c' : 'd';
+    return d;
+  });
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function pct(a, b){ return Math.round(a / b * 100); }
+  var BLUE = 'var(--blue)', PURPLE = 'var(--purple)', NAVY = 'var(--navy-2)', AMBER = 'var(--amber)', GREY = '#b7c1d4';
+
+  /* ---------- Formas de colorear ---------- */
+  var MODES = {
+    os:    { label:'Sistema',    of:function(d){ return d.os; }, cats:[
+              { k:'Android', l:'Android', c:BLUE }, { k:'iOS', l:'iOS', c:PURPLE } ] },
+    tipo:  { label:'Tipo',       of:function(d){ return d.tipo; }, cats:[
+              { k:'movil', l:'Móviles', c:BLUE }, { k:'tablet', l:'Tablets', c:NAVY } ] },
+    src:   { label:'Gestión',    of:function(d){ return d.src; }, cats:[
+              { k:'Google MDM', l:'Google MDM', c:BLUE }, { k:'Workspace One', l:'Workspace One', c:PURPLE } ] },
+    age:   { label:'Antigüedad', of:function(d){ return d.age; }, cats:[
+              { k:'a', l:'2020 o antes', c:AMBER }, { k:'b', l:'2021–2022', c:'#e0b56a' },
+              { k:'c', l:'2023–2024', c:'#7fa3d8' }, { k:'d', l:'2025', c:BLUE }, { k:'na', l:'Sin dato', c:GREY } ] },
+    estado:{ label:'Estado',     of:function(d){ return d.estado; }, cats:[
+              { k:'activo', l:'Activo', c:BLUE }, { k:'inactivo', l:'Sin actividad > ' + STALE_DAYS + ' días', c:AMBER },
+              { k:'baja', l:'Cuenta deshabilitada o suspendida', c:'#c0504d' } ] }
+  };
+  var MODE_ORDER = ['os', 'tipo', 'src', 'age', 'estado'];
+
+  var state = { mode:'os', filt:null, q:'' };
+  (function(){ // ?tipo=movil|tablet desde la portada
+    var m = /[?&]tipo=(movil|tablet)/.exec(location.search);
+    if (m) { state.mode = 'tipo'; state.filt = { f:'tipo', v:m[1] }; }
+  })();
+
+  function match(d, f){
+    if (!f) return true;
+    if (f.f === 'year') return f.v === 'na' ? !d.year : d.year === f.v;
+    if (f.f === 'model') return d.model === f.v;
+    return MODES[f.f].of(d) === f.v;
+  }
+  function filtLabel(f){
+    if (f.f === 'year') return f.v === 'na' ? 'Año sin dato' : 'Año ' + f.v;
+    if (f.f === 'model') return f.v;
+    var cat = MODES[f.f].cats.filter(function(c){ return c.k === f.v; })[0];
+    return MODES[f.f].label + ': ' + cat.l;
+  }
+  function toggle(f, v){
+    state.filt = (state.filt && state.filt.f === f && state.filt.v === v) ? null : { f:f, v:v };
+    render();
+  }
+
+  /* ---------- KPIs ---------- */
+  var total = D.length;
+  var android = D.filter(function(d){ return d.os === 'Android'; }).length;
+  var ios = total - android;
+  var iphones = D.filter(function(d){ return d.os === 'iOS' && d.tipo === 'movil'; }).length;
+  var ipads = ios - iphones;
+  var moviles = D.filter(function(d){ return d.tipo === 'movil'; }).length;
+  var tablets = total - moviles;
+  var users = {}; D.forEach(function(d){ users[d.user] = (users[d.user] || 0) + 1; });
+  var nUsers = Object.keys(users).length;
+  var uniqueDevs = total - D.filter(function(d){ return d.dup; }).length / 2;
+  var baja = D.filter(function(d){ return d.estado === 'baja'; });
+  var inact = D.filter(function(d){ return d.estado === 'inactivo'; });
+  var review = baja.length + inact.length;
+
+  document.getElementById('kpis').innerHTML =
+    '<div class="kpi dark"><div class="v">' + total + '</div><div class="l">Dispositivos</div><div class="s">' + uniqueDevs + ' únicos · ' + nUsers + ' usuarios</div></div>' +
+    '<div class="kpi"><div class="v">' + pct(android, total) + '%<small>Android</small></div><div class="l">' + android + ' Android · ' + ios + ' iOS</div>' +
+      '<div class="split"><span style="width:' + pct(android, total) + '%;background:var(--blue)"></span><span style="flex:1;background:var(--purple)"></span></div></div>' +
+    '<div class="kpi"><div class="v">' + moviles + '<small>móviles</small></div><div class="l">' + tablets + ' tablets</div>' +
+      '<div class="split"><span style="width:' + pct(moviles, total) + '%;background:var(--blue)"></span><span style="flex:1;background:var(--navy-2)"></span></div></div>' +
+    '<div class="kpi"><div class="v">' + review + '</div><div class="l">A revisar</div><div class="s">' + baja.length + ' de cuentas deshabilitadas o suspendidas · ' + inact.length + ' sin actividad &gt; ' + STALE_DAYS + ' días</div></div>';
+
+  /* ---------- Mapa de cuadrados ---------- */
+  var COLS = 22, ROWS = 12, CELL = 20, PITCH = 24;
+  var WW = COLS * PITCH - (PITCH - CELL), HH = ROWS * PITCH - (PITCH - CELL);
+  var cells = '';
+  D.forEach(function(d){
+    cells += '<g class="c" data-i="' + d.i + '" style="transform:translate(' + (WW / 2) + 'px,' + (HH / 2) + 'px);opacity:0">' +
+      '<rect width="' + CELL + '" height="' + CELL + '" rx="5" fill="#b7c1d4"/>' +
+      (d.tipo === 'tablet' ? '<circle cx="' + CELL / 2 + '" cy="' + CELL / 2 + '" r="3" fill="#fff" pointer-events="none"/>' : '') + '</g>';
+  });
+  document.getElementById('waffle').innerHTML =
+    '<svg viewBox="0 0 ' + WW + ' ' + HH + '" role="img" aria-label="Un cuadrado por dispositivo">' + cells + '</svg>';
+  var gEls = Array.prototype.slice.call(document.querySelectorAll('#waffle .c'));
+  var firstLayout = true;
+
+  function layout(){
+    var mode = MODES[state.mode];
+    var catIdx = {}; mode.cats.forEach(function(c, i){ catIdx[c.k] = i; });
+    var order = D.slice().sort(function(a, b){
+      return catIdx[mode.of(a)] - catIdx[mode.of(b)] || a.os.localeCompare(b.os) || a.model.localeCompare(b.model) || a.i - b.i;
+    });
+    order.forEach(function(d, k){
+      var col = Math.floor(k / ROWS), row = k % ROWS;
+      var g = gEls[d.i];
+      var color = mode.cats[catIdx[mode.of(d)]].c;
+      g.style.transitionDelay = firstLayout ? (k * 4) + 'ms' : '0ms';
+      g.style.transform = 'translate(' + col * PITCH + 'px,' + row * PITCH + 'px)';
+      g.style.opacity = match(d, state.filt) ? 1 : 0.15;
+      g.firstChild.setAttribute('fill', color);
+    });
+    if (firstLayout) { firstLayout = false; setTimeout(function(){ gEls.forEach(function(g){ g.style.transitionDelay = '0ms'; }); }, 1800); }
+  }
+
+  function renderSeg(){
+    document.getElementById('seg').innerHTML = MODE_ORDER.map(function(k){
+      return '<button type="button" data-mode="' + k + '" class="' + (state.mode === k ? 'on' : '') + '">' + MODES[k].label + '</button>';
+    }).join('');
+  }
+  function renderLegend(){
+    var mode = MODES[state.mode];
+    document.getElementById('lgd').innerHTML = mode.cats.map(function(c){
+      var n = D.filter(function(d){ return mode.of(d) === c.k; }).length;
+      var on = state.filt && state.filt.f === state.mode && state.filt.v === c.k;
+      return '<button type="button" class="lg' + (on ? ' on' : '') + '" data-f="' + state.mode + '" data-v="' + c.k + '"><i style="background:' + c.c + '"></i>' + esc(c.l) + ' <b>' + n + '</b></button>';
+    }).join('');
+  }
+  var DEFAULT_DETAIL = 'Pasa el cursor por un cuadrado para ver el dispositivo. Pulsa una etiqueta para filtrar.';
+  function showDetail(d){
+    var el = document.getElementById('detail');
+    if (!d) { el.textContent = DEFAULT_DETAIL; return; }
+    el.innerHTML = '<b>' + esc(d.user) + '</b> · ' + esc(d.model) + ' · ' + d.os + (d.tipo === 'tablet' ? ' (tablet)' : '') +
+      '<br>' + esc(d.src) + ' · ' + esc(d.comp) + ' · último acceso ' + d.last + ' (hace ' + d.days + ' días)';
+  }
+  var wf = document.getElementById('waffle');
+  wf.addEventListener('mouseover', function(e){ var g = e.target.closest('.c'); if (g) showDetail(D[+g.getAttribute('data-i')]); });
+  wf.addEventListener('mouseleave', function(){ showDetail(null); });
+
+  /* ---------- Barras por año (apiladas Android / iOS) ---------- */
+  var YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+  function renderYears(){
+    var W = 520, H = 290, L = 30, R = 6, T = 22, B = 34;
+    var keys = YEARS.concat(['na']);
+    var data = keys.map(function(k){
+      var sub = D.filter(function(d){ return k === 'na' ? !d.year : d.year === k; });
+      return { k:k, a:sub.filter(function(d){ return d.os === 'Android'; }).length, i:sub.filter(function(d){ return d.os === 'iOS'; }).length };
+    });
+    var max = Math.max.apply(null, data.map(function(s){ return s.a + s.i; }));
+    var top = Math.ceil(max / 10) * 10;
+    var pw = (W - L - R) / keys.length, bw = pw * 0.66, plotH = H - T - B;
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Dispositivos por año de lanzamiento">';
+    for (var t = 0; t <= top; t += 10) {
+      var yy = T + plotH * (1 - t / top);
+      svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yy + '" y2="' + yy + '" stroke="#edf0f5"/>' +
+             '<text x="' + (L - 6) + '" y="' + yy + '" text-anchor="end" dominant-baseline="central" font-size="10" fill="#8890a0">' + t + '</text>';
+    }
+    data.forEach(function(s, n){
+      var x = L + n * pw + (pw - bw) / 2, ha = plotH * s.a / top, hi = plotH * s.i / top, tot = s.a + s.i;
+      var sel = state.filt && state.filt.f === 'year' && state.filt.v === s.k;
+      var dim = state.filt && !sel ? ' opacity=".3"' : '';
+      var yA = H - B - ha, yI = yA - hi;
+      svg += '<g class="bar" data-year="' + s.k + '"' + dim + '><title>' + (s.k === 'na' ? 'Sin dato' : s.k) + ': ' + s.a + ' Android, ' + s.i + ' iOS</title>' +
+        '<rect x="' + (L + n * pw) + '" y="' + T + '" width="' + pw + '" height="' + plotH + '" fill="transparent"/>' +
+        (s.a ? '<rect class="b" x="' + x + '" y="' + yA + '" width="' + bw + '" height="' + ha + '" rx="2" fill="' + BLUE + '"/>' : '') +
+        (s.i ? '<rect class="b" x="' + x + '" y="' + yI + '" width="' + bw + '" height="' + hi + '" rx="2" fill="' + PURPLE + '"/>' : '') +
+        (sel ? '<rect x="' + (x - 2) + '" y="' + (yI - 2) + '" width="' + (bw + 4) + '" height="' + (ha + hi + 4) + '" rx="4" fill="none" stroke="var(--navy)" stroke-width="2"/>' : '') +
+        '<text x="' + (x + bw / 2) + '" y="' + (yI - 6) + '" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)" font-family="Space Grotesk">' + (tot || '') + '</text>' +
+        '<text x="' + (x + bw / 2) + '" y="' + (H - B + 16) + '" text-anchor="middle" font-size="10.5" fill="' + (sel ? 'var(--navy)' : '#5b6778') + '" font-weight="' + (sel ? 700 : 400) + '">' + (s.k === 'na' ? 'N/D' : '’' + String(s.k).slice(2)) + '</text></g>';
+    });
+    document.getElementById('years').innerHTML = svg + '</svg>';
+  }
+
+  /* ---------- Modelos más habituales ---------- */
+  function renderModels(){
+    var cnt = {}, osOf = {};
+    D.forEach(function(d){ cnt[d.model] = (cnt[d.model] || 0) + 1; osOf[d.model] = d.os; });
+    var list = Object.keys(cnt).sort(function(a, b){ return cnt[b] - cnt[a] || a.localeCompare(b); }).slice(0, 10);
+    var W = 520, rowH = 27, LBL = 150, H = list.length * rowH + 6, max = cnt[list[0]];
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Modelos más habituales">';
+    list.forEach(function(m, i){
+      var y = 3 + i * rowH, w = (W - LBL - 40) * cnt[m] / max;
+      var sel = state.filt && state.filt.f === 'model' && state.filt.v === m;
+      var dim = state.filt && !sel ? ' opacity=".3"' : '';
+      svg += '<g class="bar" data-model="' + esc(m) + '"' + dim + '><title>' + esc(m) + ': ' + cnt[m] + '</title>' +
+        '<rect x="0" y="' + y + '" width="' + W + '" height="' + rowH + '" fill="transparent"/>' +
+        '<text x="' + (LBL - 8) + '" y="' + (y + rowH / 2) + '" text-anchor="end" dominant-baseline="central" font-size="11" fill="' + (sel ? 'var(--navy)' : 'var(--ink)') + '" font-weight="' + (sel ? 700 : 500) + '">' + esc(m) + '</text>' +
+        '<rect class="b" x="' + LBL + '" y="' + (y + 5) + '" width="' + w + '" height="' + (rowH - 10) + '" rx="3" fill="' + (osOf[m] === 'iOS' ? PURPLE : BLUE) + '"' + (sel ? ' stroke="var(--navy)" stroke-width="2"' : '') + '/>' +
+        '<text x="' + (LBL + w + 6) + '" y="' + (y + rowH / 2) + '" dominant-baseline="central" font-size="11" font-weight="600" fill="var(--ink)" font-family="Space Grotesk">' + cnt[m] + '</text></g>';
+    });
+    document.getElementById('models').innerHTML = svg + '</svg>';
+  }
+
+  /* ---------- Lectura ---------- */
+  (function(){
+    var galaxyA = D.filter(function(d){ return /^Galaxy A/.test(d.model); }).length;
+    var samsung = D.filter(function(d){ return /^Galaxy/.test(d.model); }).length;
+    var gmdm = D.filter(function(d){ return d.src === 'Google MDM'; }).length;
+    var ws1 = total - gmdm;
+    var androidGoogle = D.filter(function(d){ return d.os === 'Android' && d.src === 'Google MDM'; }).length;
+    var iosGoogle = D.filter(function(d){ return d.os === 'iOS' && d.src === 'Google MDM'; }).length;
+    var phoneCnt = {};
+    D.forEach(function(d){ if (d.tipo === 'movil') phoneCnt[d.user] = (phoneCnt[d.user] || 0) + 1; });
+    var multi = Object.keys(phoneCnt).filter(function(u){ return phoneCnt[u] > 1; });
+    var extra = multi.reduce(function(a, u){ return a + phoneCnt[u] - 1; }, 0);
+    var dupRecs = D.filter(function(d){ return d.dup; }).length;
+    var withYear = D.filter(function(d){ return d.year; });
+    var old = withYear.filter(function(d){ return d.year <= 2021; }).length;
+    var badUsers = {}; baja.forEach(function(d){ badUsers[d.user] = 1; });
+    var noImei = D.filter(function(d){ return !d.imei; });
+    var noImeiG = noImei.filter(function(d){ return d.src === 'Google MDM'; }).length;
+
+    document.getElementById('concl').innerHTML =
+      '<li><b>' + pct(android, total) + ' % Android</b>, casi todo Samsung Galaxy A. En iOS, ' + ipads + ' de ' + ios + ' son iPad.</li>' +
+      '<li><b>Dos plataformas MDM:</b> Google MDM (' + gmdm + ') y Workspace One (' + ws1 + ').</li>' +
+      '<li class="w"><b>' + review + ' a revisar:</b> ' + baja.length + ' con la cuenta deshabilitada o suspendida y ' + inact.length + ' sin actividad &gt; ' + STALE_DAYS + ' días.</li>' +
+      '<li class="w"><b>' + multi.length + ' usuarios con 2 o más móviles:</b> posibles teléfonos antiguos sin dar de baja.</li>';
+    document.getElementById('warn').innerHTML = '<b>Faltan datos:</b> ' + noImei.length + ' sin IMEI y ' + D.filter(function(d){ return !d.tel; }).length +
+      ' sin teléfono. ' + D.filter(function(d){ return !d.year; }).length + ' modelos sin año (año estimado por modelo).';
+  })();
+
+  /* ---------- Tabla ---------- */
+  function tagEstado(d){
+    var t = d.estado === 'baja' ? '<span class="tag bad">Cuenta ' + (d.susp ? 'suspendida' : 'deshabilitada') + '</span>' :
+            d.estado === 'inactivo' ? '<span class="tag warn2">Sin actividad</span>' : '<span class="tag ok">Activo</span>';
+    return t + (d.dup ? ' <span class="tag">Duplicado</span>' : '');
+  }
+  function renderTable(){
+    var q = state.q.trim().toLowerCase();
+    var list = D.filter(function(d){
+      if (!match(d, state.filt)) return false;
+      return !q || (d.user + ' ' + d.model + ' ' + d.comp + ' ' + d.src).toLowerCase().indexOf(q) !== -1;
+    }).sort(function(a, b){ return a.user.localeCompare(b.user) || a.model.localeCompare(b.model); });
+    document.getElementById('tbody').innerHTML = list.map(function(d){
+      return '<tr><td class="user">' + esc(d.user) + '</td><td>' + esc(d.model) + '</td>' +
+        '<td><span class="tag ' + (d.os === 'iOS' ? 'ios' : 'and') + '">' + d.os + '</span></td>' +
+        '<td>' + (d.tipo === 'tablet' ? 'Tablet' : 'Móvil') + '</td><td>' + (d.year || '—') + '</td><td>' + esc(d.src) + '</td><td>' + esc(d.comp) + '</td>' +
+        '<td' + (d.days > STALE_DAYS ? ' class="stale"' : '') + '>' + d.last + '</td><td>' + tagEstado(d) + '</td></tr>';
+    }).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--mut);padding:24px">Sin resultados.</td></tr>';
+    document.getElementById('count').textContent = 'Mostrando ' + list.length + ' de ' + total;
+    document.getElementById('chip').innerHTML = state.filt ? '<span class="chip">' + esc(filtLabel(state.filt)) + '<button type="button" id="clr" aria-label="Quitar filtro">×</button></span>' : '';
+    var clr = document.getElementById('clr');
+    if (clr) clr.addEventListener('click', function(){ state.filt = null; render(); });
+  }
+
+  function render(){ renderSeg(); renderLegend(); layout(); renderYears(); renderModels(); renderTable(); }
+
+  /* ---------- Eventos ---------- */
+  document.getElementById('seg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b) return;
+    state.mode = b.getAttribute('data-mode');
+    if (state.filt && MODES[state.filt.f]) state.filt = null; // el filtro de leyenda pertenece a la forma anterior
+    render();
+  });
+  document.getElementById('lgd').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (b) toggle(b.getAttribute('data-f'), b.getAttribute('data-v'));
+  });
+  document.getElementById('years').addEventListener('click', function(e){
+    var g = e.target.closest('[data-year]'); if (!g) return;
+    var k = g.getAttribute('data-year'); toggle('year', k === 'na' ? 'na' : Number(k));
+  });
+  document.getElementById('models').addEventListener('click', function(e){
+    var g = e.target.closest('[data-model]'); if (g) toggle('model', g.getAttribute('data-model'));
+  });
+  document.getElementById('q').addEventListener('input', function(e){ state.q = e.target.value; renderTable(); });
+
+  showDetail(null);
+  render();
+})();
+</script>
+
+</body>
+</html>
